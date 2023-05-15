@@ -165,9 +165,10 @@ def detect_match(csvfile):
             occurrence_count += 1
     return occurrence_count
 
-def ny_general_consumption(csvfile):
+def ny_general_consumption(csvfile,dataid):
     df = pd.read_csv(csvfile)
     df['localminute'] = pd.to_datetime(df['localminute'])  # change localminute to dt object
+    df = df[df['dataid'] == dataid]  # filter by dataid
     sorted_df = df.sort_values('localminute')  # sort data by dt
     sum_values = sorted_df.iloc[:, 2:].sum(axis=1)
 

@@ -5,11 +5,11 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-overall = dataProcessing.ny_general_consumption('csv/newyork_csv')
+overall_df = dataProcessing.ny_general_consumption('csv/newyork_csv', 27)
 
 extractTar = 0
 plotDGCData = 0
-
+ 
 if (extractTar):
     tar_file_path = 'tar/1minute_data_newyork.tar.gz'
     csv_file_path = 'csv/newyork_csv'
@@ -24,7 +24,7 @@ if (plotDGCData):
     # import and sort
     csv_file_path = 'csv/minute_data.csv'
     startTime = '2023-04-16 00:00:00'
-    endTime = '2023-04-18 00:00:00'
+    endTime = '2023-04-23 00:00:00'
     userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', startTime, endTime)
     userData2.to_csv('output/user2_data.csv')
 
