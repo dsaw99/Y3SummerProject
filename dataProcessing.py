@@ -36,3 +36,38 @@ def csv_to_sorted_df(csvfile, dataid, start_time, end_time):
     endStamp = pd.to_datetime(end_time)
     sorted_df = sorted_df[(sorted_df['localminute'] >= startStamp) & (sorted_df['localminute'] < endStamp)]
     return sorted_df
+
+def plot_columns_df(df, column_names, output_filename=None):
+    x = df['localminute']
+    
+    for column_name in column_names:
+        y = df[column_name]
+        plt.plot(x, y, label=column_name)
+    
+    plt.xlabel('localminute')
+    plt.title('Plot of Columns against localminute')
+    plt.legend()
+    
+    if output_filename:
+        plt.savefig(output_filename)
+        plt.close()
+    else:
+        plt.show()
+
+def plot_columns_csv(csv_file, column_names, output_filename=None):
+    df = pd.read_csv(csv_file)
+    x = df['localminute']
+    
+    for column_name in column_names:
+        y = df[column_name]
+        plt.plot(x, y, label=column_name)
+    
+    plt.xlabel('localminute')
+    plt.title('Plot of Columns against localminute')
+    plt.legend()
+    
+    if output_filename:
+        plt.savefig(output_filename)
+        plt.close()
+    else:
+        plt.show()
