@@ -21,11 +21,11 @@ if (extractTar):
 
 if (sortDGCData):
     csv_file_path = 'csv/minute_data.csv'
-    userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', '28/04/2023 00:00', '30/04/2023 00:00')
+    userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', '2023-04-16 00:00:00', '2023-04-23 00:00:00')
     userData2.to_csv('output/user2_data.csv')
-
 
 if (plotOn):
     csv_file_path = 'output/user2_data.csv'
     # dataProcessing.plot_columns_csv('data27.csv',['air1','air2'],'plot')
-    dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
+    # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
+    dataProcessing.plot_by_hours_csv(csv_file_path, '2023-04-16 00:00:00', '2023-04-23 00:00:00','Avg Wattage')

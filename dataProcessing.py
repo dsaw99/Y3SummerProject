@@ -3,6 +3,7 @@ import csv
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 def tar_to_csv(tar_file, output_csv_filename):
     # Find the CSV file within the tar.gz file
@@ -81,4 +82,26 @@ def plot_columns_csv(csv_file, column_names, output_filename=None, dt_name='loca
         plt.close()
     else:
         plt.show()
+
+def plot_by_hours_csv(csv_file, start_time, end_time, value, dt_name='DateTime (UTC)'):
+    df = pd.read_csv(csv_file)
+    df[dt_name] = pd.to_datetime(df[dt_name])
+    df['date'] = df[dt_name].dt.date
+    start_date = pd.to_datetime(start_time).date()
+    end_date = pd.to_datetime(end_time).date()
+    selected_df = df[(df['date'] >= start_date) & (df['date'] < end_date)]
+    selected_df['time'] = selected_df[dt_name].dt.hour * 60 + selected_df[dt_name].dt.minute
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for date, group in selected_df.groupby('date'):
+        ax.plot(group['time'], group[value], label=date)
+    ax.set_xlabel('Time (h)')
+    ax.set_ylabel(str(value))
+    ax.set_title('Time Series Data for Consecutive Dates')
+    ax.legend()
+    ax.set_xticks(range(0, 1440, 120))
+    ax.set_xticklabels([f"{tick // 60}:00"  for tick in ax.get_xticks()])
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
 
