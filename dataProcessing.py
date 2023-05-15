@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import numpy as np
 
 def tar_to_csv(tar_file, output_csv_filename):
     # Find the CSV file within the tar.gz file
@@ -117,5 +118,63 @@ def split_weekdays_weekends(csv_file):
     # Split the DataFrame into two sets based on the day of the week
     weekday_df = df[df['day_of_week'] < 5]  # Weekdays are Monday to Friday (0 to 4)
     weekend_df = df[df['day_of_week'] >= 5]  # Weekends are Saturday and Sunday (5 and 6)
+
+def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing entries with the average of the past and future entries
+    data = pd.read_csv(csvfile)
+    data['DateTime (UTC)'] = pd.to_datetime(data['DateTime (UTC)'])
+    data.sort_values('DateTime (UTC)', inplace=True)
+    # Iterate through the data
+    for i in range(len(data) - 1):
+        current_timestamp = data['DateTime (UTC)'].iloc[i]
+        next_timestamp = data['DateTime (UTC)'].iloc[i + 1]
+
+        if (next_timestamp - current_timestamp).seconds > 60:
+            missing_minutes = int((next_timestamp - current_timestamp).seconds / 60) - 1
+            interpolation_increment = (data['Avg Wattage'].iloc[i + 1] - data['Avg Wattage'].iloc[i]) / (missing_minutes + 1)
+
+            for j in range(1, missing_minutes + 1):
+                interpolated_timestamp = current_timestamp + pd.DateOffset(minutes=j)
+                interpolated_value = data['Avg Wattage'].iloc[i] + (interpolation_increment * j)
+
+                # Create a new entry for the missing minute
+                new_row = {
+                    'Serial Number': 'User 2',
+                    'DateTime (UTC)': interpolated_timestamp,
+                    'Avg Wattage': interpolated_value
+                    # Add other columns as needed
+                }
+
+                # Append the new row to the data structure
+                data = data.append(new_row, ignore_index=True)
+
+    data.sort_values('DateTime (UTC)', inplace=True)
+    data.to_csv('output/interpolated_data.csv', index=False)
+
+def detect_match(csvfile):
+    data = pd.read_csv(csvfile)
+    occurrence_count = 0
+    pattern = [403.5, 196.5, 203.9, 367.8, 1621.4, 1613.8, 1397.9, 937.7, 1023.1, 1110.1, 1181.3, 1121, 1073.1, 1038.8,
+               1038.5, 1153.1, 1108.19, 931.3, 869.6, 832.9, 976.1, 934.3]
     
-    return weekday_df, weekend_df
+    threshold = 10
+    for i in range(len(data)):
+        data_minute = [data['Avg Wattage'].iloc[i]]
+        correlation = np.correlate(data_minute, pattern)
+        if correlation > threshold: 
+            occurrence_count += 1
+    return occurrence_count
+
+def ny_general_consumption(csvfile):
+    df = pd.read_csv(csvfile)
+    df['localminute'] = pd.to_datetime(df['localminute'])  # change localminute to dt object
+    sorted_df = df.sort_values('localminute')  # sort data by dt
+    sum_values = sorted_df.iloc[:, 2:-2].sum(axis=1)
+
+    new_df = pd.DataFrame({
+        'dataid': sorted_df['dataid'],
+        'localminute': sorted_df['localminute'],
+        'overall': sum_values
+    })
+
+    new_df.to_csv('output/overall_consumption.csv', index=False)
+    return new_df
