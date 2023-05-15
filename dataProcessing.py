@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import numpy as np
 
 def tar_to_csv(tar_file, output_csv_filename):
     # Find the CSV file within the tar.gz file
@@ -165,12 +166,11 @@ def detect_match(csvfile):
             occurrence_count += 1
     return occurrence_count
 
-def ny_general_consumption(csvfile,dataid):
+def ny_general_consumption(csvfile):
     df = pd.read_csv(csvfile)
     df['localminute'] = pd.to_datetime(df['localminute'])  # change localminute to dt object
-    df = df[df['dataid'] == dataid]  # filter by dataid
     sorted_df = df.sort_values('localminute')  # sort data by dt
-    sum_values = sorted_df.iloc[:, 2:].sum(axis=1)
+    sum_values = sorted_df.iloc[:, 2:-2].sum(axis=1)
 
     new_df = pd.DataFrame({
         'dataid': sorted_df['dataid'],
