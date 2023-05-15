@@ -151,3 +151,18 @@ def detect_match(csvfile):
         if correlation > threshold: 
             occurrence_count += 1
     return occurrence_count
+
+def ny_general_consumption(csvfile):
+    df = pd.read_csv(csvfile)
+    df['localminute'] = pd.to_datetime(df['localminute'])  # change localminute to dt object
+    sorted_df = df.sort_values('localminute')  # sort data by dt
+    sum_values = sorted_df.iloc[:, 2:].sum(axis=1)
+
+    new_df = pd.DataFrame({
+        'dataid': sorted_df['dataid'],
+        'localminute': sorted_df['localminute'],
+        'overall': sum_values
+    })
+
+    new_df.to_csv('output/overall_consumption.csv', index=False)
+    return new_df

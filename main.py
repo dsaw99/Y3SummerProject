@@ -5,8 +5,10 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+overall = dataProcessing.ny_general_consumption('csv/newyork_csv')
+
 extractTar = 0
-plotDGCData = 1 
+plotDGCData = 0
 
 if (extractTar):
     tar_file_path = 'tar/1minute_data_newyork.tar.gz'
