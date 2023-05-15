@@ -6,8 +6,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 extractTar = 0
-sortDGCData = 1
-plotOn = 1
+plotDGCData = 1
 
 if (extractTar):
     tar_file_path = 'tar/1minute_data_newyork.tar.gz'
@@ -19,13 +18,18 @@ if (extractTar):
     data27 = dataProcessing.ny_csv_to_sorted_df(csv_file_path, 27, '2019-05-01 00:00:00-05', '2019-05-02 00:00:00-05')
     data27.to_csv('output/data27.csv', index=False)
 
-if (sortDGCData):
+
+
+if (plotDGCData):
+    # import and sort
     csv_file_path = 'csv/minute_data.csv'
-    userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', '2023-04-16 00:00:00', '2023-04-23 00:00:00')
+    startTime = '2023-04-16 00:00:00'
+    endTime = '2023-04-18 00:00:00'
+    userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', startTime, endTime)
     userData2.to_csv('output/user2_data.csv')
 
-if (plotOn):
+    #plot data according to hours
     csv_file_path = 'output/user2_data.csv'
     # dataProcessing.plot_columns_csv('data27.csv',['air1','air2'],'plot')
     # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
-    dataProcessing.plot_by_hours_csv(csv_file_path, '2023-04-16 00:00:00', '2023-04-23 00:00:00','Avg Wattage')
+    dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
