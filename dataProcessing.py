@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import numpy as np
 
 def tar_to_csv(tar_file, output_csv_filename):
     # Find the CSV file within the tar.gz file
@@ -106,6 +105,20 @@ def plot_by_hours_csv(csv_file, start_time, end_time, value, dt_name='DateTime (
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
+
+def split_weekdays_weekends(csv_file):
+    df = pd.read_csv(csv_file)
+    # Convert the 'localminute' column to a datetime object
+    df['localminute'] = pd.to_datetime(df['localminute'])
+    
+    # Extract the day of the week (0 = Monday, 6 = Sunday)
+    df['day_of_week'] = df['localminute'].dt.weekday
+    
+    # Split the DataFrame into two sets based on the day of the week
+    weekday_df = df[df['day_of_week'] < 5]  # Weekdays are Monday to Friday (0 to 4)
+    weekend_df = df[df['day_of_week'] >= 5]  # Weekends are Saturday and Sunday (5 and 6)
+    
+    return weekday_df, weekend_df
 
 def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing entries with the average of the past and future entries
     data = pd.read_csv(csvfile)
