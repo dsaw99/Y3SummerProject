@@ -5,7 +5,9 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-extractTar = False
+extractTar = 0
+sortDGCData = 1
+plotOn = 1
 
 if (extractTar):
     tar_file_path = 'tar/1minute_data_newyork.tar.gz'
@@ -17,9 +19,13 @@ if (extractTar):
     data27 = dataProcessing.ny_csv_to_sorted_df(csv_file_path, 27, '2019-05-01 00:00:00-05', '2019-05-02 00:00:00-05')
     data27.to_csv('output/data27.csv', index=False)
 
-# dataProcessing.plot_columns_csv('data27.csv',['air1','air2'],'plot')
-csv_file_path = 'csv/minute_data.csv'
+if (sortDGCData):
+    csv_file_path = 'csv/minute_data.csv'
+    userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', '28/04/2023 00:00', '30/04/2023 00:00')
+    userData2.to_csv('output/user2_data.csv')
 
-userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', '01/01/2023 00:00', '01/01/2024 00:00')
-userData2.to_csv('output/user2_data.csv')
-# print(userData2)
+
+if (plotOn):
+    csv_file_path = 'output/user2_data.csv'
+    # dataProcessing.plot_columns_csv('data27.csv',['air1','air2'],'plot')
+    dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')

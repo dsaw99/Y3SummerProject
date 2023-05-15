@@ -47,15 +47,15 @@ def dgc_csv_to_sorted_df(csvfile, serial, start_time, end_time):
     sorted_df = sorted_df[(sorted_df['DateTime (UTC)'] >= startStamp) & (sorted_df['DateTime (UTC)'] < endStamp)]
     return sorted_df
 
-def plot_columns_df(df, column_names, output_filename=None):
-    x = df['localminute']
+def plot_columns_df(df, column_names, output_filename=None,  dt_name='localminute'):
+    x = df[dt_name]
     
     for column_name in column_names:
         y = df[column_name]
         plt.plot(x, y, label=column_name)
     
-    plt.xlabel('localminute')
-    plt.title('Plot of Columns against localminute')
+    plt.xlabel(dt_name)
+    plt.title('Plot of Columns against time')
     plt.legend()
     
     if output_filename:
@@ -64,16 +64,16 @@ def plot_columns_df(df, column_names, output_filename=None):
     else:
         plt.show()
 
-def plot_columns_csv(csv_file, column_names, output_filename=None):
+def plot_columns_csv(csv_file, column_names, output_filename=None, dt_name='localminute'):
     df = pd.read_csv(csv_file)
-    x = df['localminute']
+    x = df[dt_name]
     
     for column_name in column_names:
         y = df[column_name]
         plt.plot(x, y, label=column_name)
     
-    plt.xlabel('localminute')
-    plt.title('Plot of Columns against localminute')
+    plt.xlabel(dt_name)
+    plt.title('Plot of Columns against time')
     plt.legend()
     
     if output_filename:
