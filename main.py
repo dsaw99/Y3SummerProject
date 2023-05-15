@@ -32,4 +32,7 @@ if (plotDGCData):
     # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
     dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
 
-dataProcessing.plot_columns_csv('output/data27.csv',['air1','air2','car1','waterheater1'],'plot')
+wkDF, wkendDF = dataProcessing.split_weekdays_weekends('csv/newyork_csv')
+
+print(wkendDF)
+print(wkDF)
