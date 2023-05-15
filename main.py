@@ -34,3 +34,10 @@ dataProcessing.plot_columns_csv('output\overall_consumption.csv', ['overall'], o
 #     # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
 #     dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
 
+
+    #plot data according to hours
+    csv_file_path = 'output/user2_data.csv'
+    # dataProcessing.plot_columns_csv('data27.csv',['air1','air2'],'plot')
+    # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
+    dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
+

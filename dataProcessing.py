@@ -118,8 +118,6 @@ def split_weekdays_weekends(csv_file):
     # Split the DataFrame into two sets based on the day of the week
     weekday_df = df[df['day_of_week'] < 5]  # Weekdays are Monday to Friday (0 to 4)
     weekend_df = df[df['day_of_week'] >= 5]  # Weekends are Saturday and Sunday (5 and 6)
-    
-    return weekday_df, weekend_df
 
 def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing entries with the average of the past and future entries
     data = pd.read_csv(csvfile)
