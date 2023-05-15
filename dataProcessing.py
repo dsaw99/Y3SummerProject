@@ -91,7 +91,8 @@ def plot_by_hours_csv(csv_file, start_time, end_time, value, dt_name='DateTime (
     end_date = pd.to_datetime(end_time).date()
     selected_df = df[(df['date'] >= start_date) & (df['date'] < end_date)]
     selected_df['time'] = selected_df[dt_name].dt.hour * 60 + selected_df[dt_name].dt.minute
-    fig, ax = plt.subplots(figsize=(10, 6))
+
+    fig, ax = plt.subplots(figsize=(15, 6))
     for date, group in selected_df.groupby('date'):
         ax.plot(group['time'], group[value], label=date)
     ax.set_xlabel('Time (h)')
