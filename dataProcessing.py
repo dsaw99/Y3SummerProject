@@ -4,7 +4,11 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+<<<<<<< HEAD
 import numpy as np
+=======
+from matplotlib.ticker import MaxNLocator
+>>>>>>> 0582790 (Added hourly_consumption)
 
 def tar_to_csv(tar_file, output_csv_filename):
     # Find the CSV file within the tar.gz file
@@ -69,11 +73,17 @@ def plot_columns_df(df, column_names, output_filename=None,  dt_name='localminut
 def plot_columns_csv(csv_file, column_names, output_filename=None, dt_name='localminute'):
     df = pd.read_csv(csv_file)
     x = df[dt_name]
-    
+    fig, ax = plt.subplots()
+
     for column_name in column_names:
         y = df[column_name]
-        plt.plot(x, y, label=column_name)
-    
+        ax.plot(x, y, label=column_name)
+
+    # set the x-axis tick locator
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=5))
+
+    plt.xticks(rotation=10)
+
     plt.xlabel(dt_name)
     plt.title('Plot of Columns against time')
     plt.legend()
@@ -178,3 +188,20 @@ def ny_general_consumption(csvfile):
 
     new_df.to_csv('output/overall_consumption.csv', index=False)
     return new_df
+
+def hourly_consumption(csv_file):
+    
+    df = pd.read_csv(csv_file)
+    # Convert the 'localminute' column to a datetime object
+    df['localminute'] = pd.to_datetime(df['localminute'])
+    
+    # Set the 'localminute' column as the index of the DataFrame
+    df.set_index('localminute', inplace=True)
+    
+    # Resample the DataFrame to hourly frequency and sum the consumption for each hour
+    hourly_df = df.drop('dataid', axis=1).resample('H').sum(numeric_only=True, min_count=1)
+    
+    # Add the 'dataid' column back to the output DataFrame
+    hourly_df.insert(0, 'dataid', df['dataid'].iloc[0])
+    
+    return hourly_df
