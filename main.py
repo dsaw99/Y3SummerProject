@@ -6,7 +6,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 extractTar = 0
-plotDGCData = 0
+plotDGCData = 1 
 
 if (extractTar):
     tar_file_path = 'tar/1minute_data_newyork.tar.gz'
@@ -22,7 +22,7 @@ if (plotDGCData):
     # import and sort
     csv_file_path = 'csv/minute_data.csv'
     startTime = '2023-04-16 00:00:00'
-    endTime = '2023-04-23 00:00:00'
+    endTime = '2023-04-18 00:00:00'
     userData2 = dataProcessing.dgc_csv_to_sorted_df(csv_file_path, 'User 2', startTime, endTime)
     userData2.to_csv('output/user2_data.csv')
 
@@ -32,4 +32,3 @@ if (plotDGCData):
     # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
     dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
 
-dataProcessing.plot_columns_csv('output/data27.csv',['air1','air2','car1','waterheater1'],'plot')
