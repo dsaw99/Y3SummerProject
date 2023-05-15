@@ -27,7 +27,7 @@ def tar_to_csv(tar_file, output_csv_filename):
         print(f"CSV file extracted and saved as {output_csv_filename}")
     tar_file.close()
 
-def csv_to_sorted_df(csvfile, dataid, start_time, end_time):
+def ny_csv_to_sorted_df(csvfile, dataid, start_time, end_time):
     df = pd.read_csv(csvfile)
     filtered_df = df[df['dataid'] == dataid]  # filter by dataid
     filtered_df['localminute'] = pd.to_datetime(filtered_df['localminute'])  # change localminute to dt object
@@ -35,6 +35,16 @@ def csv_to_sorted_df(csvfile, dataid, start_time, end_time):
     startStamp = pd.to_datetime(start_time)
     endStamp = pd.to_datetime(end_time)
     sorted_df = sorted_df[(sorted_df['localminute'] >= startStamp) & (sorted_df['localminute'] < endStamp)]
+    return sorted_df
+
+def dgc_csv_to_sorted_df(csvfile, serial, start_time, end_time):
+    df = pd.read_csv(csvfile)
+    filtered_df = df[df['Serial Number'] == serial]  # filter by dataid
+    filtered_df['DateTime (UTC)'] = pd.to_datetime(filtered_df['DateTime (UTC)'])  # change localminute to dt object
+    sorted_df = filtered_df.sort_values('DateTime (UTC)')  # sort data by dt
+    startStamp = pd.to_datetime(start_time)
+    endStamp = pd.to_datetime(end_time)
+    sorted_df = sorted_df[(sorted_df['DateTime (UTC)'] >= startStamp) & (sorted_df['DateTime (UTC)'] < endStamp)]
     return sorted_df
 
 def plot_columns_df(df, column_names, output_filename=None):
@@ -71,3 +81,4 @@ def plot_columns_csv(csv_file, column_names, output_filename=None):
         plt.close()
     else:
         plt.show()
+
