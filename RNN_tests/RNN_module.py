@@ -15,6 +15,13 @@ from keras.utils.vis_utils import model_to_dot
 import io
 import requests
 
+def get_dates(csvfile):
+    data = pd.read_csv(csvfile)
+    date_column = pd.to_datetime(data['DateTime (UTC)'])
+    unique_dates = date_column.dt.date.unique()
+    for date in unique_dates:
+        print(date)
+
 def create_dataset(dataset, window_size = 1): #constructs windows of window_size from the time series data
     data_x, data_y = [], []
     for i in range(len(dataset) - window_size - 1):
