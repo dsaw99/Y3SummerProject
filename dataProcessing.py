@@ -5,6 +5,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+import seaborn as sns
 from matplotlib.ticker import MaxNLocator
 
 def tar_to_csv(tar_file, output_csv_filename):
@@ -114,17 +115,18 @@ def plot_by_hours_csv(csv_file, start_time, end_time, value, dt_name='DateTime (
     plt.tight_layout()
     plt.show()
 
-def split_weekdays_weekends(csv_file):
-    df = pd.read_csv(csv_file)
-    # Convert the 'localminute' column to a datetime object
+def split_weekdays_weekends(df):
     df['localminute'] = pd.to_datetime(df['localminute'])
-    
-    # Extract the day of the week (0 = Monday, 6 = Sunday)
     df['day_of_week'] = df['localminute'].dt.weekday
     
-    # Split the DataFrame into two sets based on the day of the week
-    weekday_df = df[df['day_of_week'] < 5]  # Weekdays are Monday to Friday (0 to 4)
-    weekend_df = df[df['day_of_week'] >= 5]  # Weekends are Saturday and Sunday (5 and 6)
+    # Create copies of the subsets using the copy() method
+    weekday_df = df[df['day_of_week'] < 5].copy()
+    weekend_df = df[df['day_of_week'] >= 5].copy()
+    
+    # Drop the 'day_of_week' column from the copies
+    weekday_df.drop('day_of_week', axis=1, inplace=True)
+    weekend_df.drop('day_of_week', axis=1, inplace=True)
+    
     return weekday_df, weekend_df
 
 def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing entries with the average of the past and future entries
@@ -187,9 +189,7 @@ def ny_general_consumption(csvfile):
     new_df.to_csv('output/overall_consumption.csv', index=False)
     return new_df
 
-def hourly_consumption(csv_file):
-    
-    df = pd.read_csv(csv_file)
+def hourly_consumption(df):
     # Convert the 'localminute' column to a datetime object
     df['localminute'] = pd.to_datetime(df['localminute'])
     
@@ -197,9 +197,45 @@ def hourly_consumption(csv_file):
     df.set_index('localminute', inplace=True)
     
     # Resample the DataFrame to hourly frequency and sum the consumption for each hour
-    hourly_df = df.drop('dataid', axis=1).resample('H').sum(numeric_only=True, min_count=1)
-    
-    # Add the 'dataid' column back to the output DataFrame
-    hourly_df.insert(0, 'dataid', df['dataid'].iloc[0])
+    hourly_df = df.resample('H').sum()
+    hourly_df = pd.concat([df, df.index.to_frame()], axis=1).reset_index(drop=True)
     
     return hourly_df
+
+def plot_hourly_boxplot(df, plotName):
+    df['localminute'] = pd.to_datetime(df['localminute'])
+
+    # Extract the hour from 'localminute'
+    df['hour'] = df['localminute'].dt.hour
+
+    # Extract the date from 'localminute'
+    df['date'] = df['localminute'].dt.date
+
+    # Group by 'date', 'hour', and 'dataid', sum the 'overall' values
+    hourly_consumption = df.groupby(['date', 'hour', 'dataid'])['overall'].sum()
+
+    # Pivot the resulting Series to get the desired format
+    result = hourly_consumption.unstack(level=[1, 2])
+
+    # Fill missing values with 0
+    result = result.fillna(0)
+
+    # Prepare data for box plot
+    data = [result[column].values for column in result.columns]
+
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+
+    # Create box plots
+    ax.boxplot(data, labels=result.columns, showfliers=False)
+
+    # Set plot title and labels
+    ax.set_title('Box Plot for Each Hour')
+    ax.set_xlabel('Hour')
+    ax.set_ylabel('Value')
+
+    # Rotate x-axis labels if needed
+    plt.xticks(rotation='vertical')
+
+    plt.savefig(plotName)
+    plt.close()
