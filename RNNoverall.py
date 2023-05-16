@@ -86,11 +86,12 @@ def rnn_plot(model, train_X, test_X, train_Y, test_Y, dataset, normalizer):
     plt.legend()
     plt.show()
 
-#MAIN CODE
-csvfile = 'output/overall_consumption.csv'
-overall_df = pd.read_csv(csvfile)
-overall_df = pd.DataFrame(overall_df.iloc[:, 2]) 
+run_main = 0
+if (run_main):
+    csvfile = 'output/overall_consumption.csv'
+    overall_df = pd.read_csv(csvfile)
+    overall_df = pd.DataFrame(overall_df.iloc[:, 2]) 
 
-train_X, test_X, train_Y, test_Y, dataset, normalizer = data_prepare(overall_df, 0.7, 10)
-rnn_model = rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10)
-rnn_plot(rnn_model, train_X, test_X, train_Y, test_Y, dataset, normalizer)
+    train_X, test_X, train_Y, test_Y, dataset, normalizer = data_prepare(overall_df, 0.7, 10)
+    rnn_model = rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10)
+    rnn_plot(rnn_model, train_X, test_X, train_Y, test_Y, dataset, normalizer)
