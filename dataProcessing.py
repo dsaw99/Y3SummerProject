@@ -129,7 +129,7 @@ def split_weekdays_weekends(df):
     
     return weekday_df, weekend_df
 
-def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing entries with the average of the past and future entries
+def csv_interpolate(csvfile, output_path): #inputs a CSV file and fils up all the missing entries with the average of the past and future entries
     data = pd.read_csv(csvfile)
     data['DateTime (UTC)'] = pd.to_datetime(data['DateTime (UTC)'])
     data.sort_values('DateTime (UTC)', inplace=True)
@@ -140,16 +140,22 @@ def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing ent
 
         if (next_timestamp - current_timestamp).seconds > 60:
             missing_minutes = int((next_timestamp - current_timestamp).seconds / 60) - 1
-            interpolation_increment = (data['Avg Wattage'].iloc[i + 1] - data['Avg Wattage'].iloc[i]) / (missing_minutes + 1)
+            interpolation_val_increment = (data['Avg Wattage'].iloc[i + 1] - data['Avg Wattage'].iloc[i]) / (missing_minutes + 1)
+            interpolation_con_increment = (data['Consumption (kWh)'].iloc[i + 1] - data['Consumption (kWh)'].iloc[i]) / (missing_minutes + 1)
 
             for j in range(1, missing_minutes + 1):
                 interpolated_timestamp = current_timestamp + pd.DateOffset(minutes=j)
-                interpolated_value = data['Avg Wattage'].iloc[i] + (interpolation_increment * j)
-
+                if(missing_minutes < 5):
+                    interpolated_value = data['Avg Wattage'].iloc[i] + (interpolation_val_increment * j)
+                    interpolated_consumption = data['Consumption (kWh)'].iloc[i] + (interpolation_con_increment * j)
+                else:
+                    interpolated_value = 0
+                    interpolated_consumption = 0
                 # Create a new entry for the missing minute
                 new_row = {
                     'Serial Number': 'User 2',
                     'DateTime (UTC)': interpolated_timestamp,
+                    'Consumption (kWh)': interpolated_consumption,
                     'Avg Wattage': interpolated_value
                     # Add other columns as needed
                 }
@@ -158,7 +164,7 @@ def csv_interpolate(csvfile): #inputs a CSV file and fils up all the missing ent
                 data = data.append(new_row, ignore_index=True)
 
     data.sort_values('DateTime (UTC)', inplace=True)
-    data.to_csv('output/interpolated_data.csv', index=False)
+    data.to_csv(output_path, index=False)
 
 def detect_match(csvfile):
     data = pd.read_csv(csvfile)
