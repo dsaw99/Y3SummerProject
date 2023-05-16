@@ -180,20 +180,17 @@ def detect_match(csvfile):
             occurrence_count += 1
     return occurrence_count
 
-def ny_general_consumption(csvfile):
+def ny_general_consumption(csvfile, output_path):
     df = pd.read_csv(csvfile)
     df['localminute'] = pd.to_datetime(df['localminute'])  # change localminute to dt object
     sorted_df = df.sort_values('localminute')  # sort data by dt
     sum_values = sorted_df.iloc[:, 2:-2].sum(axis=1)
-
     new_df = pd.DataFrame({
         'dataid': sorted_df['dataid'],
         'localminute': sorted_df['localminute'],
         'overall': sum_values
     })
-
-    new_df.to_csv('output/overall_consumption.csv', index=False)
-    return new_df
+    new_df.to_csv(output_path, index=False)
 
 def hourly_consumption(df):
     # Convert the 'localminute' column to a datetime object
