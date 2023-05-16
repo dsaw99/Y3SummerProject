@@ -5,15 +5,13 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-overall_df = dataProcessing.ny_general_consumption('output/data27.csv')
-dataProcessing.plot_columns_csv('output\overall_consumption.csv', ['overall'], output_filename=None, dt_name='localminute')
+#overall_df = dataProcessing.ny_general_consumption('output/data27.csv')
+#dataProcessing.plot_columns_csv('output\overall_consumption.csv', ['overall'], output_filename=None, dt_name='localminute')
 # extractTar = 0
 # plotDGCData = 0
- 
 # if (extractTar):
 #     tar_file_path = 'tar/1minute_data_newyork.tar.gz'
 #     csv_file_path = 'csv/newyork_csv'
-
 #     with tarfile.open(tar_file_path, 'r:gz') as tar:
 #         dataProcessing.tar_to_csv(tar, csv_file_path)
 
@@ -36,8 +34,26 @@ dataProcessing.plot_columns_csv('output\overall_consumption.csv', ['overall'], o
 
 
     #plot data according to hours
-    csv_file_path = 'output/user2_data.csv'
+#csv_file_path = 'output/user2_data.csv'
     # dataProcessing.plot_columns_csv('data27.csv',['air1','air2'],'plot')
     # dataProcessing.plot_columns_csv(csv_file_path, ['Avg Wattage'], 'plot', 'DateTime (UTC)')
-    dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
+#dataProcessing.plot_by_hours_csv(csv_file_path, startTime, endTime,'Avg Wattage')
 
+#dataProcessing.plot_columns_csv('output/data27.csv',['air1','air2','car1','waterheater1'],'plot')
+
+#wkDF, wkendDF = dataProcessing.split_weekdays_weekends('csv/newyork_csv')
+
+#hourlyDF = dataProcessing.hourly_consumption('output/data27_month.csv')
+#hourlyDF.to_csv('output/data27MonthHourly.csv', index=False)
+
+
+df = dataProcessing.ny_general_consumption('output/data27_month.csv')
+#df, df2 = dataProcessing.split_weekdays_weekends(df1)
+
+dfWeek, dfWeekend = dataProcessing.split_weekdays_weekends(df)
+
+dataProcessing.plot_hourly_boxplot(df, "df Box Plot")
+dataProcessing.plot_hourly_boxplot(dfWeek, "dfWeek Box Plot")
+dataProcessing.plot_hourly_boxplot(dfWeekend, "dfWeekend Box Plot")
+
+print(dfWeekend.columns)
