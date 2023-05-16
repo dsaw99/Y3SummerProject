@@ -58,21 +58,21 @@ def rnn_predict_plot(model, test_X, test_Y, dataset, normalizer):
     plt.legend()
     plt.show()
 
-# #MAIN CODE
-# #TRAIN ON OVERALL CONSUMPTION FOR A DAY
-# csvfile = 'output/overall_consumption.csv'
-# overall_df = pd.read_csv(csvfile)
-# overall_df = pd.DataFrame(overall_df.iloc[:, 2]) 
-# overall_np = overall_df.values.astype("float32")
-
-# train_X, test_X, train_Y, test_Y, dataset, normalizer = RNNoverall.data_prepare(overall_df, 0.7, 10)
-# rnn_model = RNNoverall.rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10)
-
-# #TEST ON OVERALL CONSUMPTION FOR A WHOLE MONTH
-# csvfile = 'output\data27_month_overall.csv'
-# overall_df = pd.read_csv(csvfile)
-# overall_df = pd.DataFrame(overall_df.iloc[:, 2]) 
-# overall_np = overall_df.values.astype("float32")
-
-# test_X, test_Y, dataset, normalizer = data_prepare(overall_df, 10)
-# rnn_predict_plot(rnn_model, test_X, test_Y, dataset, normalizer)
+run_main = 0
+if (run_main):
+    csvfile = 'output/overall_consumption.csv'
+    overall_df = pd.read_csv(csvfile)
+    overall_df = pd.DataFrame(overall_df.iloc[:, 2]) 
+    overall_np = overall_df.values.astype("float32")
+    
+    train_X, test_X, train_Y, test_Y, dataset, normalizer = RNNoverall.data_prepare(overall_df, 0.7, 10)
+    rnn_model = RNNoverall.rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10)
+    
+    #TEST ON OVERALL CONSUMPTION FOR A WHOLE MONTH
+    csvfile = 'output\data27_month_overall.csv'
+    overall_df = pd.read_csv(csvfile)
+    overall_df = pd.DataFrame(overall_df.iloc[:, 2]) 
+    overall_np = overall_df.values.astype("float32")
+    
+    test_X, test_Y, dataset, normalizer = data_prepare(overall_df, 10)
+    rnn_predict_plot(rnn_model, test_X, test_Y, dataset, normalizer)    
