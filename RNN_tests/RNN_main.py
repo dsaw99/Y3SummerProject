@@ -16,7 +16,7 @@ from keras.utils.vis_utils import model_to_dot
 import io
 import requests
 
-run_train = 0
+run_train = 1
 if (run_train):
     csvfile = 'output/overall_consumption.csv'
     overall_df = pd.read_csv(csvfile)
@@ -26,7 +26,7 @@ if (run_train):
     rnn_model = RNN_module.rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10)
     RNN_module.rnn_plot(rnn_model, train_X, test_X, train_Y, test_Y, dataset, normalizer)
 
-run_main = 0
+run_main = 1
 if (run_main):
     #TEST ON OVERALL CONSUMPTION FOR A WHOLE MONTH
     csvfile = 'output\data27_month_overall.csv'
