@@ -51,13 +51,15 @@ def data_prepare(timeSeries, training_perc, window_size): #takes in a dataframe 
     print("Shape of training labels: " + str((train_Y.shape)))
     return train_X, test_X, train_Y, test_Y, dataset, normalizer
 
-def rnn_train(train_X, train_Y, batch_size, epochs, window_size):
+def rnn_train(train_X, train_Y, batch_size, epochs, window_size,save):
     batch_size = 32
     rnn = Sequential()    
     rnn.add(LSTM(16, input_shape = (window_size, 1)))
     rnn.add(Dense(1))
     rnn.compile(loss = "mean_squared_error",  optimizer = "adam", metrics = ['mse'])
     rnn.fit(train_X, train_Y, epochs=epochs, batch_size=batch_size, verbose=1)
+    if(save): 
+        rnn.save('rnn_model.h5')
     return rnn
 
 def rnn_plot(model, train_X, test_X, train_Y, test_Y, dataset, normalizer):
@@ -79,6 +81,12 @@ def rnn_plot(model, train_X, test_X, train_Y, test_Y, dataset, normalizer):
     test_plot = np.full_like(dataset, fill_value=np.nan)
     test_plot[len_train + (window_size * 2) + 1:len(dataset) - 1, :] = test_val_predicted #fill up offsetted values with the test values 
     
+    if len(dataset) > 10080: #set label interval in minutes
+        label_int = 1440
+    elif len(dataset) < 1450:
+        label_int = 120
+    else:
+        label_int = 720
     #matplotlib stuff
     plt.figure(figsize=(15, 5))
     plt.plot(normalizer.inverse_transform(dataset), label="True value")
@@ -87,9 +95,10 @@ def rnn_plot(model, train_X, test_X, train_Y, test_Y, dataset, normalizer):
     plt.xlabel("Time of Day (hrs)")
     plt.ylabel("Consumption")
     plt.title("Comparison true vs. predicted in the training and test set")
-    x_ticks = range(0, 1440, 120) #label once every 120 minutes
+    x_ticks = range(0, len_train, label_int) 
     x_labels = [f"{i // 60:02d}:00" for i in x_ticks]
     plt.xticks(x_ticks, x_labels)
+    plt.xticks(rotation=45)
     plt.legend()
     plt.show()
 
@@ -138,5 +147,6 @@ def real_rnn_predict_plot(model, test_X, test_Y, dataset, normalizer):
     x_ticks = range(0, len_test, label_int) 
     x_labels = [f"{i // 60:02d}:00" for i in x_ticks]
     plt.xticks(x_ticks, x_labels)
+    plt.xticks(rotation=45)
     plt.legend()
     plt.show()

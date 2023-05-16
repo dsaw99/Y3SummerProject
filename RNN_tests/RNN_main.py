@@ -9,27 +9,19 @@ sys.path.append(parent_dir)
 import dataProcessing
 
 import pandas as pd
-import numpy as np
-import tensorflow as tf
-import keras 
-from keras.layers.core import Dense, Activation, Dropout
-from keras.layers import LSTM
-from keras.models import Sequential
-from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.utils import shuffle
-import math
-import matplotlib.pyplot as plt
-from IPython.display import SVG
-from keras.utils.vis_utils import model_to_dot
-import io
-import requests
+from keras.models import load_model
 
-run_train, run_ny, run_main = 1, 0, 1
+run_train, run_main, run_ny = 0, 1, 1
 if (run_train):
     if(run_ny):
-        csvfile = 'output/overall_consumption.csv'
-        value_col = 2
+        csv_file_path = 'csv/data27_month.csv'
+        start_time = '2019-05-01 00:00:00-05:00'
+        end_time = '2019-05-08 00:00:00-05:00'
+        dataProcessing.ny_general_consumption(csv_file_path, 'output/data27_month_overall.csv') #sum up all consumption first, already sorted
+        ny_week = dataProcessing.ny_csv_to_sorted_df('output/data27_month_overall.csv', 27, start_time, end_time)
+        ny_week.to_csv('output/ny_week_train.csv')
+        csvfile = 'output/ny_week_train.csv'
+        value_col = 3
     else:
         csv_file_path = 'csv/minute_data.csv'
         startTime = '2023-04-17 00:00:00'
@@ -43,14 +35,21 @@ if (run_train):
     overall_df = pd.DataFrame(overall_df.iloc[:, value_col]) 
 
     train_X, test_X, train_Y, test_Y, dataset, normalizer = RNN_module.data_prepare(overall_df, 0.7, 10)
-    rnn_model = RNN_module.rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10)
+    rnn_model = RNN_module.rnn_train(train_X, train_Y, batch_size=32, epochs=500, window_size=10,save=True)
     RNN_module.rnn_plot(rnn_model, train_X, test_X, train_Y, test_Y, dataset, normalizer)
 
 if (run_main):
     if(run_ny):
-    #TEST ON OVERALL CONSUMPTION FOR A WHOLE MONTH
-        csvfile = 'output/data27_month_overall.csv'
-        value_col = 2
+        # #####
+        # csv_file_path = 'output/data27_month_overall.csv'
+        # start_time = '2019-05-08 00:00:00-05:00'
+        # end_time = '2019-05-31 00:00:00-05:00'
+        # ny_test = dataProcessing.ny_csv_to_sorted_df('output/data27_month_overall.csv', 27, start_time, end_time)
+        # ny_test.to_csv('output/ny_week_test.csv')
+        # #####
+        rnn_model = load_model("rnn_model.h5")
+        csvfile = 'output/ny_week_test.csv'
+        value_col = 3
     else:
         csv_file_path = 'csv/minute_data.csv'
         startTime = '2023-04-24 00:00:00'
