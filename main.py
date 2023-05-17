@@ -47,6 +47,6 @@ import matplotlib.pyplot as plt
 #hourlyDF.to_csv('output/data27MonthHourly.csv', index=False)
 
 
-df = pd.read_csv(r"output/User1-1.csv")
+df = dataProcessing.ny_general_consumption("output/data27_month.csv")
 
-dataProcessing.plot_hourly_linegraphDGC(df)
+dataProcessing.plot_hourly_linegraph(df, "test")
