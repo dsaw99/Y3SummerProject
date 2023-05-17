@@ -1,0 +1,5 @@
+tar/
+rnn_model.h5
+output/
+csv/
+__pycache__/
