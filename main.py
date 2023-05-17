@@ -47,13 +47,6 @@ import matplotlib.pyplot as plt
 #hourlyDF.to_csv('output/data27MonthHourly.csv', index=False)
 
 
-df = dataProcessing.ny_general_consumption('output/data27_month.csv')
-#df, df2 = dataProcessing.split_weekdays_weekends(df1)
+df = pd.read_csv(r"output/User1-1.csv")
 
-dfWeek, dfWeekend = dataProcessing.split_weekdays_weekends(df)
-
-dataProcessing.plot_hourly_boxplot(df, "df Box Plot")
-dataProcessing.plot_hourly_boxplot(dfWeek, "dfWeek Box Plot")
-dataProcessing.plot_hourly_boxplot(dfWeekend, "dfWeekend Box Plot")
-
-print(dfWeekend.columns)
+dataProcessing.plot_hourly_linegraphDGC(df)

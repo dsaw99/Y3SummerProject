@@ -115,9 +115,23 @@ def plot_by_hours_csv(csv_file, start_time, end_time, value, dt_name='DateTime (
     plt.tight_layout()
     plt.show()
 
-def split_weekdays_weekends(df):
+def split_weekdays_weekendsNY(df):
     df['localminute'] = pd.to_datetime(df['localminute'])
     df['day_of_week'] = df['localminute'].dt.weekday
+    
+    # Create copies of the subsets using the copy() method
+    weekday_df = df[df['day_of_week'] < 5].copy()
+    weekend_df = df[df['day_of_week'] >= 5].copy()
+    
+    # Drop the 'day_of_week' column from the copies
+    weekday_df.drop('day_of_week', axis=1, inplace=True)
+    weekend_df.drop('day_of_week', axis=1, inplace=True)
+    
+    return weekday_df, weekend_df
+
+def split_weekdays_weekendsDGC(df):
+    df['DateTime (UTC)'] = pd.to_datetime(df['DateTime (UTC)'], dayfirst=True)
+    df['day_of_week'] = df['DateTime (UTC)'].dt.weekday
     
     # Create copies of the subsets using the copy() method
     weekday_df = df[df['day_of_week'] < 5].copy()
@@ -202,40 +216,200 @@ def hourly_consumption(df):
     
     return hourly_df
 
-def plot_hourly_boxplot(df, plotName):
-    df['localminute'] = pd.to_datetime(df['localminute'])
+def plot_hourly_boxplotDGC(df, plotName="boxplot"):
+    df = df.drop(['Serial Number', 'Device ID', 'Device Type', 'Device Make', 'Device Model', 'Device Location', 'User Device Name', 'Production (kWh)', 'Avg Wattage'], axis=1)
+    df = df.loc[df['Sense Device Name'] == 'Consumption']
+    df = df.drop('Sense Device Name', axis=1)
+    df = df.rename(columns={"DateTime (UTC)": "localminute"})
+    df = df.rename(columns={"Consumption (kWh)": "overall"})
 
-    # Extract the hour from 'localminute'
+    df['localminute'] = pd.to_datetime(df['localminute'], dayfirst=True)
     df['hour'] = df['localminute'].dt.hour
-
-    # Extract the date from 'localminute'
     df['date'] = df['localminute'].dt.date
 
-    # Group by 'date', 'hour', and 'dataid', sum the 'overall' values
-    hourly_consumption = df.groupby(['date', 'hour', 'dataid'])['overall'].sum()
-
-    # Pivot the resulting Series to get the desired format
-    result = hourly_consumption.unstack(level=[1, 2])
-
-    # Fill missing values with 0
+    hourly_consumption = df.groupby(['date', 'hour'])['overall'].sum()
+    result = hourly_consumption.unstack(level=1)
     result = result.fillna(0)
 
-    # Prepare data for box plot
     data = [result[column].values for column in result.columns]
-
-    # Create a figure and axis
     fig, ax = plt.subplots()
-
-    # Create box plots
     ax.boxplot(data, labels=result.columns, showfliers=False)
-
-    # Set plot title and labels
     ax.set_title('Box Plot for Each Hour')
     ax.set_xlabel('Hour')
     ax.set_ylabel('Value')
+    plt.xticks(rotation='vertical')
+    plt.savefig(plotName)
+    plt.close()
 
-    # Rotate x-axis labels if needed
+def plot_hourly_boxplotNY(df, plotName="boxplot"):
+    df['localminute'] = pd.to_datetime(df['localminute'])
+    df['hour'] = df['localminute'].dt.hour
+    df['date'] = df['localminute'].dt.date
+
+    hourly_consumption = df.groupby(['date', 'hour', 'dataid'])['overall'].sum()
+    result = hourly_consumption.unstack(level=[1, 2])
+    result = result.fillna(0)
+
+    data = [result[column].values for column in result.columns]
+    fig, ax = plt.subplots()
+
+    ax.boxplot(data, labels=result.columns, showfliers=False)
+    ax.set_title('Box Plot for Each Hour')
+    ax.set_xlabel('Hour')
+    ax.set_ylabel('Value')
+    plt.xticks(rotation='vertical')
+    plt.savefig(plotName)
+    plt.close()
+
+#ChatGPTs Cooler BoxPlot
+'''def plot_hourly_boxplotNY(df, plotName="boxplot"):
+    df['localminute'] = pd.to_datetime(df['localminute'])
+    df['hour'] = df['localminute'].dt.hour
+    df['date'] = df['localminute'].dt.date
+
+    hourly_consumption = df.groupby(['date', 'hour', 'dataid'])['overall'].sum()
+    result = hourly_consumption.unstack(level=[1, 2])
+    result = result.fillna(0)
+
+    data = [result[column].values for column in result.columns]
+    fig, ax = plt.subplots()
+
+    # Add the median (Q2) line to the boxplot
+    ax.boxplot(data, labels=result.columns, showfliers=False)
+    ax.set_title('Box Plot for Each Hour')
+    ax.set_xlabel('Hour')
+    ax.set_ylabel('Value')
     plt.xticks(rotation='vertical')
 
+    # Calculate and plot Q1, Q3, upper outliers (U), and lower outliers (L) for each group
+    n = len(data)
+    positions = np.arange(1, n + 1)
+    medians = [np.median(d) for d in data]
+    q1s = [np.percentile(d, 25) for d in data]
+    q3s = [np.percentile(d, 75) for d in data]
+    
+    upper_outliers = [d[d > q3] for d, q3 in zip(data, q3s)]
+    upper_outlier_positions = [np.repeat(i+1, len(d[d > q3])) for i, (d, q3) in enumerate(zip(data, q3s))]
+    upper_outliers = np.concatenate(upper_outliers)
+    upper_outlier_positions = np.concatenate(upper_outlier_positions)
+    
+    lower_outliers = [d[d < q1] for d, q1 in zip(data, q1s)]
+    lower_outlier_positions = [np.repeat(i+1, len(d[d < q1])) for i, (d, q1) in enumerate(zip(data, q1s))]
+    lower_outliers = np.concatenate(lower_outliers)
+    lower_outlier_positions = np.concatenate(lower_outlier_positions)
+    
+    ax.scatter(positions, medians, marker='o', color='red', label='Median')
+    ax.scatter(positions, q1s, marker='x', color='green', label='Q1')
+    ax.scatter(positions, q3s, marker='x', color='blue', label='Q3')
+    ax.scatter(upper_outlier_positions, upper_outliers, marker='^', color='orange', label='Upper Outliers')
+    ax.scatter(lower_outlier_positions, lower_outliers, marker='v', color='purple', label='Lower Outliers')
+    
+    plt.legend()
+    plt.savefig(plotName)
+    plt.close()'''
+
+def plot_hourly_linegraphNY(df, plotName="linegraph"):
+    df['localminute'] = pd.to_datetime(df['localminute'])
+    df['hour'] = df['localminute'].dt.hour
+    df['date'] = df['localminute'].dt.date
+
+    hourly_consumption = df.groupby(['date', 'hour', 'dataid'])['overall'].sum()
+    result = hourly_consumption.unstack(level=[1, 2])
+    result = result.fillna(0)
+
+    data = [result[column].values for column in result.columns]
+    fig, ax = plt.subplots()
+
+    # Line graph for median, Q1, and Q3
+    n = len(data)
+    positions = np.arange(1, n + 1)
+    medians = [np.median(d) for d in data]
+    q1s = [np.percentile(d, 25) for d in data]
+    q3s = [np.percentile(d, 75) for d in data]
+
+    upper_outliers = [np.max(d[d > q3]) if np.any(d > q3) else None for d, q3 in zip(data, q3s)]
+    lower_outliers = [np.min(d[d < q1]) if np.any(d < q1) else None for d, q1 in zip(data, q1s)]
+
+    # Plot median, Q1, Q3, upper outliers (U), and lower outliers (L)
+    plt.plot(positions, medians, marker='o', color='red', label='Median')
+    plt.plot(positions, q1s, marker='.', color='green', label='Q1', linestyle='dashed')
+    plt.plot(positions, q3s, marker='.', color='blue', label='Q3', linestyle='dashed')
+
+    # Plot upper outliers (U) as a line graph
+    upper_outliers_valid = [o for o in upper_outliers if o is not None]
+    if len(upper_outliers_valid) > 0:
+        plt.plot(positions, [q3 if o is None else o for q3, o in zip(q3s, upper_outliers)], color='orange',
+                 linestyle='dashed', linewidth=0.5)
+        plt.scatter(positions, upper_outliers, marker='^', color='orange', label='Upper Outlier')
+
+    # Plot lower outliers (L) as a line graph
+    lower_outliers_valid = [o for o in lower_outliers if o is not None]
+    if len(lower_outliers_valid) > 0:
+        plt.plot(positions, [q1 if o is None else o for q1, o in zip(q1s, lower_outliers)], color='purple',
+                 linestyle='dashed', linewidth=0.5)
+        plt.scatter(positions, lower_outliers, marker='v', color='purple', label='Lower Outlier')
+
+    plt.title('Line Graph for Median, Q1, Q3, Upper Outliers, and Lower Outliers')
+    plt.xlabel('Group')
+    plt.ylabel('Value')
+    plt.xticks(positions, result.columns, rotation='vertical')
+    plt.legend()
+    plt.savefig(plotName)
+    plt.close()
+
+
+
+def plot_hourly_linegraphDGC(df, plotName="linegraphDGC"):
+    df = df.drop(['Serial Number', 'Device ID', 'Device Type', 'Device Make', 'Device Model', 'Device Location', 'User Device Name', 'Production (kWh)', 'Avg Wattage'], axis=1)
+    df = df.loc[df['Sense Device Name'] == 'Consumption']
+    df = df.drop('Sense Device Name', axis=1)
+    df = df.rename(columns={"DateTime (UTC)": "localminute"})
+    df = df.rename(columns={"Consumption (kWh)": "overall"})
+
+    df['localminute'] = pd.to_datetime(df['localminute'], dayfirst=True)
+    df['hour'] = df['localminute'].dt.hour
+    df['date'] = df['localminute'].dt.date
+
+    hourly_consumption = df.groupby(['date', 'hour'])['overall'].sum()
+    result = hourly_consumption.unstack(level=1)
+    result = result.fillna(0)
+
+    data = [result[column].values for column in result.columns]
+    fig, ax = plt.subplots()
+
+    # Line graph for median, Q1, and Q3
+    n = len(data)
+    positions = np.arange(1, n + 1)
+    medians = [np.median(d) for d in data]
+    q1s = [np.percentile(d, 25) for d in data]
+    q3s = [np.percentile(d, 75) for d in data]
+
+    upper_outliers = [np.max(d[d > q3]) if np.any(d > q3) else None for d, q3 in zip(data, q3s)]
+    lower_outliers = [np.min(d[d < q1]) if np.any(d < q1) else None for d, q1 in zip(data, q1s)]
+
+    # Plot median, Q1, Q3, upper outliers (U), and lower outliers (L)
+    plt.plot(positions, medians, marker='o', color='red', label='Median', linewidth=0.75, markersize=5)
+    plt.plot(positions, q1s, marker='.', color='green', label='Q1', linestyle='dashed', linewidth=0.5, markersize=3)
+    plt.plot(positions, q3s, marker='.', color='blue', label='Q3', linestyle='dashed', linewidth=0.5, markersize=3)
+
+    # Plot upper outliers (U) as a line graph
+    upper_outliers_valid = [o for o in upper_outliers if o is not None]
+    if len(upper_outliers_valid) > 0:
+        plt.plot(positions, [q3 if o is None else o for q3, o in zip(q3s, upper_outliers)], color='orange',
+                 linestyle='dashed', linewidth=0.5)
+        plt.scatter(positions, upper_outliers, marker='^', color='orange', label='Upper Outlier', s=15)
+
+    # Plot lower outliers (L) as a line graph
+    lower_outliers_valid = [o for o in lower_outliers if o is not None]
+    if len(lower_outliers_valid) > 0:
+        plt.plot(positions, [q1 if o is None else o for q1, o in zip(q1s, lower_outliers)], color='purple',
+                 linestyle='dashed', linewidth=0.5)
+        plt.scatter(positions, lower_outliers, marker='v', color='purple', label='Lower Outlier', s=15)
+
+    plt.title('Line Graph for Median, Q1, Q3, Upper Outliers, and Lower Outliers')
+    plt.xlabel('Group')
+    plt.ylabel('Value')
+    plt.xticks(positions, result.columns, rotation='vertical')
+    plt.legend()
     plt.savefig(plotName)
     plt.close()
