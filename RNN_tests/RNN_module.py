@@ -8,6 +8,9 @@ from keras.models import Sequential
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import IsolationForest
+from sklearn.metrics import classification_report
 import math
 import matplotlib.pyplot as plt
 from IPython.display import SVG
@@ -150,3 +153,14 @@ def real_rnn_predict_plot(model, test_X, test_Y, dataset, normalizer):
     plt.xticks(rotation=45)
     plt.legend()
     plt.show()
+
+def construct_anomalies(csvfile, num_anomalies, amplitude, scale, start_time, output_path):
+    data = pd.read_csv(csvfile)
+    start_index = data[data['localminute'] == start_time].index[0]
+    anomalies = np.random.normal(loc=amplitude, scale=scale, size=num_anomalies)
+    # Replace data at 1-minute intervals from the start time onwards
+    for i in range(num_anomalies):
+        index = start_index + i
+        data.at[index, 'overall'] = anomalies[i]
+
+    data.to_csv(output_path, index=False)
