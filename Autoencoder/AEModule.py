@@ -6,6 +6,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from keras.callbacks import EarlyStopping
+from keras.optimizers import Adam
+from keras.layers import Dropout
+
 
 overall_df = pd.read_csv('output/data27_overall.csv')
 overall_df = pd.DataFrame(overall_df.iloc[:, 2])
@@ -35,29 +38,32 @@ layer_dims = [1440, 512, 256, 64, 16, 64, 256, 512, 1440]
 # Define the input layer
 input_layer = Input(shape=(layer_dims[0],))
 
-# Build the encoder layers
+# Build the encoder layers with Dropout
 encoder = input_layer
 for i in range(1, len(layer_dims) // 2):
     encoder = Dense(layer_dims[i], activation='relu')(encoder)
+    encoder = Dropout(0.05)(encoder)  # Add Dropout layer with a dropout rate of 0.2
 
-# Build the decoder layers
+# Build the decoder layers with Dropout
 decoder = encoder
 for i in range(len(layer_dims) // 2, len(layer_dims)):
     decoder = Dense(layer_dims[i], activation='relu')(decoder)
+    decoder = Dropout(0.05)(decoder)  # Add Dropout layer with a dropout rate of 0.2
 
 # Build the autoencoder model
 autoencoder = Model(inputs=input_layer, outputs=decoder)
 
 # Compile the model
-autoencoder.compile(optimizer='adam', loss='mean_squared_error')
+# Compile the model with a specific learning rate
+autoencoder.compile(optimizer=Adam(lr=0.0001), loss='mean_squared_error')
 
 # Define early stopping callback
-early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=20, verbose=1)
+early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.00001, patience=20, verbose=1)
 
 # Train the autoencoder with early stopping
 history = autoencoder.fit(train_data, train_data,
                           validation_data=(val_data, val_data),
-                          epochs=80,
+                          epochs=300,
                           batch_size=16,
                           callbacks=[early_stopping])
 
