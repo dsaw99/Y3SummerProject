@@ -4,6 +4,8 @@ from keras.models import Model
 from keras.layers import Input, Dense
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+from keras.callbacks import EarlyStopping
 
 overall_df = pd.read_csv('output/data27_overall.csv')
 overall_df = pd.DataFrame(overall_df.iloc[:, 2])
@@ -49,11 +51,16 @@ autoencoder = Model(inputs=input_layer, outputs=decoder)
 # Compile the model
 autoencoder.compile(optimizer='adam', loss='mean_squared_error')
 
-# Train the autoencoder
+# Define early stopping callback
+early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=20, verbose=1)
+
+# Train the autoencoder with early stopping
 history = autoencoder.fit(train_data, train_data,
                           validation_data=(val_data, val_data),
                           epochs=80,
-                          batch_size=16)
+                          batch_size=16,
+                          callbacks=[early_stopping])
+
 
 # Reconstruct the test data using the trained autoencoder
 reconstructed_test_data = autoencoder.predict(val_data)
@@ -65,32 +72,36 @@ mse = np.mean(np.square(val_data - reconstructed_test_data), axis=1)
 best_indices = np.argsort(mse)[:5]
 worst_indices = np.argsort(mse)[-5:]
 
+sns.set(style='whitegrid', font_scale=1.2)
+
 # Plot the 5 best reconstructions
 for i, idx in enumerate(best_indices):
-    plt.figure()
-    plt.plot(range(len(val_data[idx])), val_data[idx], label='Truth')
-    plt.plot(range(len(reconstructed_test_data[idx])), reconstructed_test_data[idx], label='Reconstructed')
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(val_data[idx])), val_data[idx], label='Truth', linestyle='-', linewidth=2)
+    plt.plot(range(len(reconstructed_test_data[idx])), reconstructed_test_data[idx], label='Reconstructed', linestyle='--', linewidth=2)
     plt.xlabel('Time')
     plt.ylabel('Value')
-    plt.title(f'Time Series Plot (Best) {i+1}\nMSE: {mse[idx]}\nIndex: {idx}')  # Update the title
-    plt.legend()
+    plt.title(f'Time Series Plot (Best) {i+1}\nMSE: {mse[idx]}\nIndex: {idx}', fontsize=16)
+    plt.legend(loc='upper right', fontsize=12)
     plt.ylim(0, 0.7)  # Set y-axis limits
     plt.xticks(np.arange(0, len(val_data[idx]), 60), np.arange(0, len(val_data[idx])//60))
-    plt.savefig(f'AE_best_plot_{i+1}')
+    plt.tight_layout()
+    plt.savefig(f'AE_best_plot_{i+1}.png', dpi=300)
     plt.close()
 
 # Plot the 5 worst reconstructions
 for i, idx in enumerate(worst_indices):
-    plt.figure()
-    plt.plot(range(len(val_data[idx])), val_data[idx], label='Truth')
-    plt.plot(range(len(reconstructed_test_data[idx])), reconstructed_test_data[idx], label='Reconstructed')
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(val_data[idx])), val_data[idx], label='Truth', linestyle='-', linewidth=2)
+    plt.plot(range(len(reconstructed_test_data[idx])), reconstructed_test_data[idx], label='Reconstructed', linestyle='--', linewidth=2)
     plt.xlabel('Time')
     plt.ylabel('Value')
-    plt.title(f'Time Series Plot (Worst) {i+1}\nMSE: {mse[idx]}\nIndex: {idx}')  # Update the title
-    plt.legend()
+    plt.title(f'Time Series Plot (Worst) {i+1}\nMSE: {mse[idx]}\nIndex: {idx}', fontsize=16)
+    plt.legend(loc='upper right', fontsize=12)
     plt.ylim(0, 0.7)  # Set y-axis limits
     plt.xticks(np.arange(0, len(val_data[idx]), 60), np.arange(0, len(val_data[idx])//60))
-    plt.savefig(f'AE_worst_plot_{i+1}')
+    plt.tight_layout()
+    plt.savefig(f'AE_worst_plot_{i+1}.png', dpi=300)
     plt.close()
 
 
