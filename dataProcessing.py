@@ -77,7 +77,6 @@ def plot_columns_csv(csv_file, column_names, output_filename=None, dt_name='loca
         y = df[column_name]
         ax.plot(x, y, label=column_name)
 
-    # set the x-axis tick locator
     ax.xaxis.set_major_locator(MaxNLocator(nbins=5))
 
     plt.xticks(rotation=10)

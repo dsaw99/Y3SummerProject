@@ -4,6 +4,7 @@ import csv
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
+import numpy as np
 
 #overall_df = dataProcessing.ny_general_consumption('output/data27.csv')
 #dataProcessing.plot_columns_csv('output\overall_consumption.csv', ['overall'], output_filename=None, dt_name='localminute')
@@ -45,8 +46,5 @@ import matplotlib.pyplot as plt
 
 #hourlyDF = dataProcessing.hourly_consumption('output/data27_month.csv')
 #hourlyDF.to_csv('output/data27MonthHourly.csv', index=False)
-
-
-df = dataProcessing.ny_general_consumption("output/data27_month.csv")
-
-dataProcessing.plot_hourly_linegraph(df, "test")
+df = dataProcessing.ny_general_consumption('csv/newyork.csv')
+df.to_csv('csv/overallNY')
