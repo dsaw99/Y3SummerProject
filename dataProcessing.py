@@ -114,7 +114,7 @@ def plot_by_hours_csv(csv_file, start_time, end_time, value, dt_name='DateTime (
     plt.tight_layout()
     plt.show()
 
-def split_weekdays_weekendsNY(df):
+def split_weekdays_weekends(df):
     if hasattr(df, "localminute"):
         df['localminute'] = pd.to_datetime(df['localminute'])
         df['day_of_week'] = df['localminute'].dt.weekday
@@ -236,24 +236,31 @@ def GetHourlyConsumpt24Cols(df):
     return result
 
 
+
 def plot_hourly_boxplot(df, plotName="boxplot"):
     result = GetHourlyConsumpt24Cols(df)
     data = [result[column].values for column in result.columns]
-    fig, ax = plt.subplots()
+    
+    fig, ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size as per your preference
 
-    ax.boxplot(data, labels=result.columns, showfliers=False)
+    # Define a custom blue color palette
+    custom_colors = ["#0066cc"] * len(result.columns)
+
+    sns.boxplot(data=data, ax=ax, showfliers=False, palette=custom_colors)  # Use the custom blue color palette
     ax.set_title('Box Plot for Each Hour')
     ax.set_xlabel('Hour')
     ax.set_ylabel('Value')
-    plt.xticks(rotation='vertical')
-    plt.savefig(plotName)
+    ax.set_xticklabels(result.columns, rotation=45, ha='right')  # Rotate x-axis labels for better visibility
+    
+    plt.tight_layout()  # Add padding and spacing to the plot
+    plt.savefig(plotName, dpi=300)  # Increase dpi for higher resolution if needed
     plt.close()
-
 
 def plot_hourly_linegraph(df, plotName="linegraph"):
     result = GetHourlyConsumpt24Cols(df)
     data = [result[column].values for column in result.columns]
-    fig, ax = plt.subplots()
+    
+    fig, ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size as per your preference
 
     # Line graph for median, Q1, and Q3
     n = len(data)
@@ -266,28 +273,31 @@ def plot_hourly_linegraph(df, plotName="linegraph"):
     lower_outliers = [np.min(d[d < q1]) if np.any(d < q1) else None for d, q1 in zip(data, q1s)]
 
     # Plot median, Q1, Q3, upper outliers (U), and lower outliers (L)
-    plt.plot(positions, medians, marker='o', color='red', label='Median', linewidth=0.75, markersize=5)
-    plt.plot(positions, q1s, marker='.', color='green', label='Q1', linestyle='dashed', linewidth=0.5, markersize=3)
-    plt.plot(positions, q3s, marker='.', color='blue', label='Q3', linestyle='dashed', linewidth=0.5, markersize=3)
+    ax.plot(positions, medians, marker='o', color='red', label='Median', linewidth=1, markersize=5)
+    ax.plot(positions, q1s, marker='.', color='green', label='Q1', linestyle='dashed', linewidth=0.75, markersize=3)
+    ax.plot(positions, q3s, marker='.', color='blue', label='Q3', linestyle='dashed', linewidth=0.75, markersize=3)
 
     # Plot upper outliers (U) as a line graph
     upper_outliers_valid = [o for o in upper_outliers if o is not None]
     if len(upper_outliers_valid) > 0:
-        plt.plot(positions, [q3 if o is None else o for q3, o in zip(q3s, upper_outliers)], color='orange',
+        ax.plot(positions, [q3 if o is None else o for q3, o in zip(q3s, upper_outliers)], color='orange',
                  linestyle='dashed', linewidth=0.5)
-        plt.scatter(positions, upper_outliers, marker='^', color='orange', label='Upper Outlier', s=15)
+        ax.scatter(positions, upper_outliers, marker='^', color='orange', label='Upper Outlier', s=15)
 
     # Plot lower outliers (L) as a line graph
     lower_outliers_valid = [o for o in lower_outliers if o is not None]
     if len(lower_outliers_valid) > 0:
-        plt.plot(positions, [q1 if o is None else o for q1, o in zip(q1s, lower_outliers)], color='purple',
+        ax.plot(positions, [q1 if o is None else o for q1, o in zip(q1s, lower_outliers)], color='purple',
                  linestyle='dashed', linewidth=0.5)
-        plt.scatter(positions, lower_outliers, marker='v', color='purple', label='Lower Outlier', s=15)
+        ax.scatter(positions, lower_outliers, marker='v', color='purple', label='Lower Outlier', s=15)
 
-    plt.title('Line Graph for Median, Q1, Q3, Upper Outliers, and Lower Outliers')
-    plt.xlabel('Group')
-    plt.ylabel('Value')
-    plt.xticks(positions, result.columns, rotation='vertical')
-    plt.legend()
-    plt.savefig(plotName)
+    ax.set_title('Line Graph for Median, Q1, Q3, Upper Outliers, and Lower Outliers')
+    ax.set_xlabel('Group')
+    ax.set_ylabel('Value')
+    ax.set_xticks(positions)
+    ax.set_xticklabels(result.columns, rotation=45, ha='right')  # Rotate x-axis labels for better visibility
+    ax.legend()
+
+    plt.tight_layout()  # Add padding and spacing to the plot
+    plt.savefig(plotName, dpi=300)  # Increase dpi for higher resolution if needed
     plt.close()

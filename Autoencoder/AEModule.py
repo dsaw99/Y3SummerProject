@@ -42,13 +42,13 @@ input_layer = Input(shape=(layer_dims[0],))
 encoder = input_layer
 for i in range(1, len(layer_dims) // 2):
     encoder = Dense(layer_dims[i], activation='relu')(encoder)
-    encoder = Dropout(0.05)(encoder)  # Add Dropout layer with a dropout rate of 0.2
+    encoder = Dropout(0.02)(encoder)  # Add Dropout layer with a dropout rate of 0.2
 
 # Build the decoder layers with Dropout
 decoder = encoder
 for i in range(len(layer_dims) // 2, len(layer_dims)):
     decoder = Dense(layer_dims[i], activation='relu')(decoder)
-    decoder = Dropout(0.05)(decoder)  # Add Dropout layer with a dropout rate of 0.2
+    decoder = Dropout(0.02)(decoder)  # Add Dropout layer with a dropout rate of 0.2
 
 # Build the autoencoder model
 autoencoder = Model(inputs=input_layer, outputs=decoder)
