@@ -12,8 +12,8 @@ import pandas as pd
 from keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 
-run_train, run_main, run_anomaly, run_ny = 1, 0, 1, 1
-window_size = 300
+run_train, run_main, run_anomaly, run_ny = 0, 0, 1, 1
+window_size = 60
 epochs = 100
 
 if (run_train):
