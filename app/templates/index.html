@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nudge Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+    body, html {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        padding: 20px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .top-section {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin: auto
+    }
+
+    .bottom-section {
+        width: 100%;
+    }
+
+    .interaction-column, .score-column, .tips-column {
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        border-radius: 5px;
+        background: #fff;
+        margin-bottom: 20px;
+    }
+
+    .interaction-column, .score-column {
+        width: 400px;
+        margin-right: 20px;
+    }
+
+    .tips-column {
+        margin: auto;
+        width: 70%;
+    }
+
+    #tipsTitle {
+        font-size: 20px;
+        margin-bottom: 5px;
+        margin-top: 0;
+    }
+
+    select, button, input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    #setUserButton, #chatButton {
+        background-color: #09a530;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    #setUserButton:hover, #chatButton:hover {
+        background-color: #06601d;
+    }
+
+    nav {
+    position: relative;
+    }
+    #logoutButton {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px; /* Adjust the padding as needed */
+        font-size: 14px; /* Adjust the font size as needed */
+        width: 10%;
+    }
+
+    #tipsContent {
+        min-height: 100px;   /* This sets a minimum height */
+        height: auto;       /* This makes the height adaptable to the content */
+        overflow-y: auto;   /* This adds a scrollbar if the content overflows the div */
+        /* Add other properties as needed */
+    }
+
+    #answer {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .chat-icon {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        background-color: #09a530;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        font-size: 30px;
+        cursor: pointer;
+        z-index: 9999;
+    }
+
+    .chat-box {
+        position: fixed;
+        bottom: 20px; 
+        left: 75px; 
+        width: 350px;
+        padding: 20px;
+        background-color: #ffffff;
+        box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+        border-radius: 10px 10px 0 0;
+        display: none;
+        align-items: center; 
+        justify-content: center; 
+        flex-direction: column; 
+    }
+
+    #chatButton {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .chat-input {
+        width: 95%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .chat-output {
+        height: 150px;
+        width: 95%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        overflow-y: scroll;
+    }
+
+    .loader {
+        border: 16px solid #f3f3f3; 
+        border-top: 16px solid #3498db;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <nav>
+        {% if session['username'] and session['password'] %}
+            <button id="logoutButton">Logout</button>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        <h1>Rate The Energy Usage!</h1>
+        <div class="top-section">
+            <div class="interaction-column">
+                <select id="userInput">
+                    <option value="1">User 1</option>
+                    <option value="2">User 2</option>
+                    <option value="3">User 3</option>
+                    <option value="4">User 4</option>
+                    <option value="5">User 5</option>
+                </select>
+                <button id="setUserButton">Set User</button>
+                <p id="answer"></p>
+            </div>
+            
+            <div class="score-column">
+                <svg id="scoreChart" width="400" height="200"></svg>
+            </div>
+        </div>
+    
+        <div class="bottom-section">
+            <div class="tips-column">
+                <h2 id="tipsTitle">Challenges:</h2>
+                <p id="tipsContent"></p>
+            </div>
+        </div>
+    </div>
+        
+    <div class="chat-icon" id="chatIcon">&#128172;</div>
+    
+    <div class="chat-box" id="chatBox">
+        <div id="chatOutput" class="chat-output"></div>
+        <input type="text" id="chatInput" class="chat-input" placeholder="Get Nudges from GPT...">
+        <button id="chatButton">Send</button>
+    </div>    
+
+    <script>
+        function drawScoreChart(score) {
+            var width = 400,
+                height = 200,
+                radius = Math.min(width, height) / 2;
+
+            var svg = d3.select("#scoreChart");
+            svg.selectAll("*").remove();
+
+            var scale = d3.scaleLinear()
+                .range([0, -2 * Math.PI])
+                .domain([0, 100]);
+
+            var arc = d3.arc()
+                .innerRadius(radius / 1.3)
+                .outerRadius(radius)
+                .startAngle(0);
+
+            var color = d3.scaleLinear()
+                .range(['red', 'yellow', 'green'])
+                .domain([0, 50, 100]);
+
+            var path = svg.append("path")
+                .datum({endAngle: 0})
+                .attr("d", arc)
+                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+            path.transition()
+                .duration(2000)
+                .styleTween("fill", function() { return d3.interpolate(color(0), color(score)); })
+                .call(arcTween, scale(score));
+
+            setTimeout(function() {
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height / 2 + 10)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "36px")
+                    .style("font-family", "Impact")
+                    .style("fill", color(score))
+                    .text(score);
+            }, 2000);
+
+            function arcTween(transition, newAngle) {
+                transition.attrTween("d", function(d) {
+                    var interpolate = d3.interpolate(d.endAngle, newAngle);
+                    return function(t) {
+                        d.endAngle = interpolate(t);
+                        return arc(d);
+                    };
+                });
+            }
+        }
+
+        $("#logoutButton").click(function() {
+            window.location.href = '/logout';
+        });
+
+        $("#chatButton").click(function() {
+            var question = $("#chatInput").val();
+            $.ajax({
+                url: '/api/ask',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ question: question }),
+                success: function(response) {
+                    $("#chatOutput").append('<p>' + response + '</p>');
+                }
+            });
+        });
+
+        $(".chat-icon").click(function() {
+            var chatBox = $(".chat-box");
+            if (chatBox.is(":visible")) {
+                chatBox.hide();
+            } else {
+                chatBox.show();
+            }
+        });
+
+    $("#setUserButton").click(function() {
+        var user = $("#userInput").val();
+
+        $.ajax({
+            url: '/api/getScore',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ user: user }),
+            success: function(response) {
+                drawScoreChart(response.score);
+            }
+        });
+
+        $.ajax({
+            url: '/api/setUser',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ user: user }),
+            success: function(response) {
+                $("#answer").text(response);
+            }
+        });
+
+        $.ajax({
+            url: '/api/getChallenges',
+            type: 'POST',
+            contentType: 'application/json',
+            /* data: JSON.stringify({ question: question }), */
+            success: function(response) {
+                let formattedResponse = response.replace(/\n/g, '<br>');
+                var paragraph = $('<p>');
+                paragraph.html(formattedResponse);
+                $("#tipsContent").append(paragraph);
+            }
+        });
+
+    });
+
+    </script>
+</body>
+</html>

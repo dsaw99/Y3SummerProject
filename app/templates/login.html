@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+    body, html {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        padding: 20px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    select, button, input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    nav {
+    position: relative;
+    }
+    #loginButtonNav {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px; /* Adjust the padding as needed */
+        font-size: 14px; /* Adjust the font size as needed */
+        width: 10%;
+    }   
+
+    #loginButton {
+        background-color: #09a530;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    #loginButton:hover {
+        background-color: #06601d;
+    }
+
+    #error {
+        color: red;
+    }
+    </style>
+</head>
+
+<body>
+    <nav>
+        {% if not session['username'] and not session['password'] %}
+            <button id="loginButtonNav" onclick="location.reload();">Log In</button>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        <h1>Welcome to Nudge Generator</h1>
+
+        <div class="login-section">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="loginButton">Login</button>
+            <p id="error"></p>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        $("#loginButton").click(function() {
+        var username = $("#username").val();
+        var password = $("#password").val();
+
+        $.ajax({
+            url: '/login',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ username: username, password: password }),
+            success: function(response) {
+                if (response === 'success') {
+                    window.location.href = '/';
+                } else {
+                    $("#error").text('Invalid username or password');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX error: " + textStatus + ', ' + errorThrown);
+            }
+        });
+    });
+    </script>
+</body>
+</html>

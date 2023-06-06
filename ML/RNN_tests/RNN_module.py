@@ -84,7 +84,8 @@ def rnn_plot(model, train_X, test_X, train_Y, test_Y, dataset, normalizer):
     x_labels = [f"{i // 60:02d}:00" for i in x_ticks]
     plt.xticks(x_ticks, x_labels)
     plt.legend()
-    plt.show()
+    plt.savefig('test1.png')
+    plt.close
 
 def real_data_prepare(timeSeries, window_size): #prepares the input test data in the form of windows
     data_np = timeSeries.values.astype("float32")
@@ -132,4 +133,40 @@ def real_rnn_predict_plot(model, test_X, test_Y, dataset, normalizer):
     x_labels = [f"{i // 60:02d}:00" for i in x_ticks]
     plt.xticks(x_ticks, x_labels)
     plt.legend()
-    plt.show()
+    plt.savefig('test.png')
+    plt.close
+
+def plot_highest_error_period(model, test_X, test_Y, dataset, normalizer, window_size):
+    # PREDICTIONS
+    test_val_predicted = normalizer.inverse_transform(model.predict(test_X))  # RNN makes predictions here
+    test_val_true = normalizer.inverse_transform([test_Y])
+
+    # Calculate prediction errors
+    test_errors = np.abs(test_val_true[0] - test_val_predicted[:, 0])
+
+    # Find the 60-minute period with the highest prediction error
+    highest_error_index = np.argmax(test_errors)
+    highest_error_start = highest_error_index - window_size//2
+    highest_error_end = highest_error_index + window_size//2
+
+    print("Printing highest prediction error:")
+    print("Error: %.2f" % test_errors[highest_error_index])
+    print("Period: Start: %d, End: %d" % (highest_error_start, highest_error_end))
+
+    # Extract the highest error period from the test data
+    highest_error_period = dataset[highest_error_start:highest_error_end, :]
+
+    # Create time values for the x-axis
+    time_values = range(highest_error_start, highest_error_end)
+
+    # PLOT
+    plt.figure(figsize=(10, 5))
+    plt.plot(time_values, highest_error_period, label="Predicted values", color='orange')
+    plt.plot(time_values, test_val_true[0, highest_error_start:highest_error_end], label="True values", color='blue')
+    plt.xlabel("Time")
+    plt.ylabel("Consumption")
+    plt.title("60-Minute Period with Highest Prediction Error")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('highest_error_period.png')
+    plt.close
