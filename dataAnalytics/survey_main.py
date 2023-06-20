@@ -9,6 +9,8 @@ import score_mappings
 
 
 df = pd.read_csv('output/survey_clean.csv')
-energy_scores = score_mappings.energy_saving_knowledge(df)
-device_scores = score_mappings.device_knowledge(df)
-overall_scores = score_mappings.overall_knowledge(energy_scores,device_scores)
+energy_scores = score_mappings.energy_saving_knowledge(df) #array of energy knowledge score
+device_scores = score_mappings.device_knowledge(df) #array of 3 devices scores
+overall_scores = score_mappings.overall_knowledge(energy_scores,device_scores) #ranked from 0 to 1
+# score_mappings.count_frequency(df)
+overall_from_max = score_mappings.distance_from_max(overall_scores, 1) #ranked from 0 to 1
