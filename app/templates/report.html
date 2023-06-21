@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fridge Efficiency Report</title>
+</head>
+<body>
+  <h1>Fridge Efficiency Report</h1>
+
+  <p>There are {{ group_size }} residents in the community being suggested to substitute their fridges, 
+  which would potentially help the community save approximately {{ total_saving }} pounds per year.</p>
+
+  <h2>Fridge List</h2>
+  <table>
+    <tr>
+      <th>Household Size</th>
+      <th>Recommended Type</th>
+      <th>Suggested Capacity (L)</th>
+      <th>Current Plan Cost</th>
+      <th>New Plan Cost</th>
+      <th>Approx. Saving</th>
+    </tr>
+    {% for item in fridge_list %}
+    <tr>
+      <td>{{ item['Household_Size'] }}</td>
+      <td>{{ item['recommended type'] }}</td>
+      <td>{{ item['suggested capacity (L)'] }}</td>
+      <td>{{ item['current plan cost'] }}</td>
+      <td>{{ item['new plan cost'] }}</td>
+      <td>{{ item['Appr. Saving'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

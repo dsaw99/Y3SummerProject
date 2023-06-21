@@ -29,8 +29,8 @@
         min-height: 100vh;
     }
 
-    select, button, input[type="text"], input[type="password"] {
-        width: 100%;
+    select, input[type="text"], input[type="password"] {
+        width: 95%;
         padding: 10px;
         border-radius: 5px;
         border: 1px solid #ccc;
@@ -38,17 +38,14 @@
         margin-bottom: 15px;
     }
 
-    nav {
-    position: relative;
-    }
-    #loginButtonNav {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        padding: 5px 10px; /* Adjust the padding as needed */
-        font-size: 14px; /* Adjust the font size as needed */
-        width: 10%;
-    }   
+    button{
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        margin-bottom: 15px;
+    } 
 
     #loginButton {
         background-color: #09a530;
@@ -68,12 +65,6 @@
 </head>
 
 <body>
-    <nav>
-        {% if not session['username'] and not session['password'] %}
-            <button id="loginButtonNav" onclick="location.reload();">Log In</button>
-        {% endif %}
-    </nav>
-
     <div class="container">
         <h1>Welcome to Nudge Generator</h1>
 
