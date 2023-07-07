@@ -8,6 +8,7 @@ from io import StringIO
 
 class Fridge:
   def __init__(self):
+    self.unit_price = 0.335 #pound/kWh
     self.fridge_dic = {
       'under counter': {
         'D': 87,
@@ -15,7 +16,7 @@ class Fridge:
         'F': 113  #114 136L # 113 131L # 142 105L     # 0.838 0.863    -> 0.8505
       },
       'freestanding' : { # 2: 240L, 3:260, 4: 300, 5:370
-          #'C': 157, #104 260L 1629p
+        'C': 157, #104 260L 1629p
         'D': 184, # 130 244L 1300p #129 260L 849p     #0.496 0.533   -> 0.5145
         'E': 219, # 212 #143 365L 579p                #0.58
         'F': 263 #287 255L 500p                       #1.125
@@ -63,7 +64,7 @@ class Fridge:
     end_year = year_used + avg_fridge_lifespan
     lifespan_coeff2 = 0
 
-    for i in range(year_used, end_year):
+    for i in range(int(year_used), int(end_year)):
         term2 = self.common_ratio ** (i + 1)
         lifespan_coeff2 += term2
 
@@ -79,73 +80,79 @@ class Fridge:
 
     for n in range(users_size):
 
-      coeff = self.future_lifespan(users.loc[n,'Fridge Years Used'], 11) # from now to future 11 years
-      fridge_report.loc[n,'Lifetime Cost'] = np.random.normal(self.fridge_dic[users.loc[n,'Fridge Type']][users.loc[n,'Fridge Rating']], 5) * coeff
-
+      coeff = self.future_lifespan(users.loc[n,'Fridge Years Used'], self.common_ratio) # from now to future 11 years
+      fridge_report.loc[n,'Lifetime Cost'] = np.random.normal(self.fridge_dic[users.loc[n,'Fridge Type']][users.loc[n,'Fridge Rating']], 5) * coeff * self.unit_price * self.avg_fridge_lifespan
       # suggest different types for different households
+
       if users.loc[n,'Household_Size'] == 1:
         # sugget user use E rating under counter fridge
-        if users.loc[n,'Fridge Rating'] != 'E':
+        if users.loc[n,'Fridge Rating'] == 'F' or users.loc[n, 'Fridge Type'] != 'under counter':
           fridge_report.loc[n, 'recommended type'] = 'under counter'
           fridge_report.loc[n, 'suggested capacity'] = self.capacity_dic[1]
           fridge_report.loc[n,'Substitute Cost'] = self.fridge_cost[fridge_report.loc[n,'recommended type']]
-          fridge_report.loc[n,'Annual Running Cost'] = fridge_report.loc[n, 'suggested capacity'] * self.type_coeff['under counter']
+          fridge_report.loc[n,'Annual Running Cost'] = fridge_report.loc[n, 'suggested capacity'] * self.type_coeff['under counter'] * self.unit_price
+          fridge_report.loc[n,'New Consumption (kWh)'] = fridge_report.loc[n,'Annual Running Cost'] / 12 / self.unit_price
 
           threshold = self.payback_period(n, users, fridge_report)
+
           if (25 - users.loc[n,'Fridge Years Used']) > threshold:
             fridge_report.loc[n, 'decision'] = True # suggest replacing devices
             # new cost = price of new one + appr. running cost for 11 years (avg life span, coeff)
             fridge_report.loc[n,'New Cost'] = fridge_report.loc[n,'Substitute Cost'] + fridge_report.loc[n,'Annual Running Cost'] * self.fridge_lifespan
-
+          else:
+            fridge_report.loc[n, 'decision'] = False
         else:
           fridge_report.loc[n, 'decision'] = False
-          fridge_report.loc[n, 'recommended type'] = np.nan
-          fridge_report.loc[n, 'suggested capacity'] = np.nan
-          fridge_report.loc[n, 'New Cost'] = np.nan
 
       else:
         household = users.loc[n,'Household_Size']
-        if users.loc[n,'Fridge Rating'] != 'D':
+        if users.loc[n,'Fridge Rating'] != 'D' and users.loc[n, 'Fridge Type'] != 'under counter':
           fridge_report.loc[n, 'recommended type'] = 'freestanding'
           fridge_report.loc[n, 'suggested capacity'] = self.capacity_dic[household]
           fridge_report.loc[n,'Substitute Cost'] = self.fridge_cost[fridge_report.loc[n,'recommended type']]
-          fridge_report.loc[n,'Annual Running Cost'] = fridge_report.loc[n, 'suggested capacity'] * self.type_coeff['freestanding']
+          fridge_report.loc[n,'Annual Running Cost'] = fridge_report.loc[n, 'suggested capacity'] * self.type_coeff['freestanding'] * self.unit_price
+          fridge_report.loc[n,'New Consumption (kWh)'] = fridge_report.loc[n,'Annual Running Cost'] / 12 / self.unit_price
 
           threshold = self.payback_period(n, users, fridge_report)
+        
           if threshold > 0 and (threshold < 11 or (20-users.loc[n,'Fridge Years Used']) > threshold):
             fridge_report.loc[n, 'decision'] = True
             fridge_report.loc[n,'New Cost'] = fridge_report.loc[n,'Substitute Cost'] + fridge_report.loc[n,'Annual Running Cost'] * self.fridge_lifespan
+          else:
+            fridge_report.loc[n, 'decision'] = False
 
         else:
           fridge_report.loc[n, 'decision'] = False
-          fridge_report.loc[n, 'recommended type'] = np.nan
-          fridge_report.loc[n, 'suggested capacity'] = np.nan
-          fridge_report.loc[n, 'New Cost'] = np.nan
 
     return fridge_report
 
   def fridge_report(self, users, users_size, fridge_report, suggestion_list):
 
-    fridge_report = users[['Household_Size']].copy()
+    fridge_report = users[['User_ID', 'Household_Size']].copy()
     fridge_report = self.process_fridge(users, users_size, fridge_report)
-    fridge_report = fridge_report[['Household_Size', 'Lifetime Cost', 'recommended type', 'suggested capacity', 'New Cost', 'decision']]
-
-    list_index = 0
-
-    for n in range(users_size):
-
-      if fridge_report.loc[n,'New Cost'] < fridge_report.loc[n,'Lifetime Cost'] and fridge_report.loc[n, 'decision']:
-        suggestion_list.loc[list_index,'Household_Size'] = fridge_report.loc[n, 'Household_Size']
-        suggestion_list.loc[list_index,'recommended type'] = fridge_report.loc[n, 'recommended type']
-        suggestion_list.loc[list_index,'suggested capacity (L)'] = round(fridge_report.loc[n, 'suggested capacity'])
-        suggestion_list.loc[list_index,'current plan cost'] = round(fridge_report.loc[n, 'Lifetime Cost'])
-        suggestion_list.loc[list_index,'new plan cost'] = round(fridge_report.loc[n, 'New Cost'])
-        suggestion_list.loc[list_index,'Appr. Saving'] = round(fridge_report.loc[n, 'Lifetime Cost'] - fridge_report.loc[n, 'New Cost'])
-        list_index += 1
-
     print(fridge_report)
-    print(suggestion_list)
-    annual_total_saving = suggestion_list['Appr. Saving'].sum() / 11
+    if fridge_report.loc[0, 'decision'] == True:
+      fridge_report = fridge_report[['User_ID', 'Household_Size', 'Lifetime Cost', 'recommended type', 'suggested capacity', 'New Cost', 'New Consumption (kWh)','decision']]
+
+      list_index = 0
+
+      for n in range(users_size):
+        print(fridge_report)
+        if fridge_report.loc[n,'New Cost'] < fridge_report.loc[n,'Lifetime Cost'] and fridge_report.loc[n, 'decision']:
+          suggestion_list.loc[list_index,'User_ID'] = round(fridge_report.loc[n,'User_ID'], 0)
+          suggestion_list.loc[list_index,'Household_Size'] = round(fridge_report.loc[n, 'Household_Size'], 0)
+          suggestion_list.loc[list_index,'recommended type'] = fridge_report.loc[n, 'recommended type']
+          suggestion_list.loc[list_index,'suggested capacity (L)'] = round(fridge_report.loc[n, 'suggested capacity'])
+          suggestion_list.loc[list_index,'current plan cost'] = round(fridge_report.loc[n, 'Lifetime Cost'])
+          suggestion_list.loc[list_index,'new plan cost'] = round(fridge_report.loc[n, 'New Cost'])
+          suggestion_list.loc[list_index,'New Consumption (kWh)'] = (fridge_report.loc[n, 'New Consumption (kWh)'])
+          suggestion_list.loc[list_index,'Appr. Saving'] = round(fridge_report.loc[n, 'Lifetime Cost'] - fridge_report.loc[n, 'New Cost'])
+          list_index += 1
+
+      annual_total_saving = suggestion_list['Appr. Saving'].sum() / self.avg_fridge_lifespan
 
 
-    return suggestion_list, list_index, annual_total_saving
+      return suggestion_list, list_index, annual_total_saving
+    
+    else:
+      return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()

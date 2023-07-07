@@ -243,6 +243,50 @@
         animation: spin 2s linear infinite;
     }
 
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .form-control2 {
+        width: 98.5%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .submit-button {
+        background-color: #09a530;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    fieldset {
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    legend {
+        padding: 0 10px;
+        font-weight: bold;
+        color: #333;
+    }
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -308,7 +352,7 @@
         </div>
         <div class="bottom-section">
             <div class="tips-column">
-                <h2 id="tipsTitle">Community Challenges:</h2>
+                <h2>Community Challenges:</h2>
                 <p id="tipsContent"></p>
                 <button class= "Button" id="ChallengesButton">Get Challenge</button>
             </div>
@@ -319,34 +363,48 @@
         <div class="tips-column">
             <h2 id="FridgeTitle">Fridge Report:</h2>
             <form method="POST" action="/generate_report">
-                <label for="householdSize">Household Size:</label>
-                <input type="number" id="householdSize" name="householdSize" min="0" step="1">
-                <select id="fridgeType" name="fridgeType">
-                    <option value="freestanding">Freestanding</option>
-                    <option value="american">American</option>
-                    <option value="under counter">Under Counter</option>
-                </select>
-                <select id="energyRating" name="energyRating">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                </select>
-                <label for="yearsUsed">Years Used:</label>
-                <input type="number" id="yearsUsed" name="yearsUsed" min="0" step="1">
-                <input type="submit" value="Submit">
+                <fieldset>
+                    <legend>Household Information</legend>
+                    <div class="form-group">
+                        <label for="householdSize">Household Size:</label>
+                        <input type="number" id="householdSize" name="householdSize" min="0" step="1" max="5" class="form-control2" value="1">
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Fridge Specifications</legend>
+                    <div class="form-group">
+                        <label for="fridgeType">Fridge Type:</label>
+                        <select id="fridgeType" name="fridgeType" class="form-control">
+                            <option value="freestanding">Freestanding</option>
+                            <option value="american">American</option>
+                            <option value="under counter">Under Counter</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="energyRating">Energy Rating:</label>
+                        <select id="energyRating" name="energyRating" class="form-control">
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="yearsUsed">Years Used:</label>
+                        <input type="number" id="yearsUsed" name="yearsUsed" min="0" step="1" max="20" class="form-control2" value="4">
+                    </div>
+                </fieldset>
+                <input type="submit" value="Submit" class="submit-button">
             </form>
-        </div>
+        </div> 
     </div>
 
-    <div class="chat-icon" id="chatIcon">&#128172;</div>
-    
-    <div class="chat-box" id="chatBox">
-        <div id="chatOutput" class="chat-output"></div>
-        <input type="text" id="chatInput" class="chat-input" placeholder="Get Nudges from GPT...">
-        <button id="chatButton">Send</button>
+    <div class="bottom-section">
+        <div class="tips-column">
+            <h2>Check the Simulation:</h2>
+            <form method="POST" action="/getSimulation">
+                <input type="submit" class="submit-button" id="simulation" value="Go to Simulation">
+            </form>
+        </div>
     </div>
 
     <script>
@@ -728,28 +786,6 @@
         $("#logoutButton").click(function() {
             window.location.href = '/logout';
         });
-
-        $("#chatButton").click(function() {
-            var question = $("#chatInput").val();
-            $.ajax({
-                url: '/api/ask',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ question: question }),
-                success: function(response) {
-                    $("#chatOutput").append('<p>' + response + '</p>');
-                }
-            });
-        });
-
-        $(".chat-icon").click(function() {
-            var chatBox = $(".chat-box");
-            if (chatBox.is(":visible")) {
-                chatBox.hide();
-            } else {
-                chatBox.show();
-            }
-        });
         
         $('#ChallengesButton').click(function() {
             $.ajax({
@@ -863,6 +899,7 @@
             // Call the function when the button is clicked
             $("#setUserButton").click(fetchData);
         });
+
     </script>
 </body>
 </html>
