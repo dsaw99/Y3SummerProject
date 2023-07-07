@@ -1,16 +1,11 @@
 import tarfile
-import csv
 import pandas as pd
-from datetime import datetime
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import numpy as np
 import seaborn as sns
 from matplotlib.ticker import MaxNLocator
 import os
 from decimal import Decimal
-from decimal import Decimal
-from collections import defaultdict
 
 class Dataset:
     def __init__(self, df):
@@ -28,7 +23,7 @@ class Dataset:
 
     # PRIVATE
 
-    def _GetHourlyConsumpt24Cols(self):   # Each Column corrsponds to 1 hour (from 0-23) and each row is a day.
+    def _GetHourlyConsumpt24Cols(self):
         if hasattr(self.df, "localminute"):
             self.df['localminute'] = pd.to_datetime(self.df['localminute'])
             self.df['hour'] = self.df['localminute'].dt.hour
@@ -171,9 +166,7 @@ class Dataset:
         result = self._GetHourlyConsumpt24Cols()
         data = [result[column].values for column in result.columns]
         
-        fig, ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size as per your preference
-
-        # Line graph for median, Q1, and Q3
+        ax = plt.subplots(figsize=(10, 6))
         n = len(data)
         positions = np.arange(1, n + 1)
         medians = [np.median(d) for d in data]
@@ -183,19 +176,16 @@ class Dataset:
         upper_outliers = [np.max(d[d > q3]) if np.any(d > q3) else None for d, q3 in zip(data, q3s)]
         lower_outliers = [np.min(d[d < q1]) if np.any(d < q1) else None for d, q1 in zip(data, q1s)]
 
-        # Plot median, Q1, Q3, upper outliers (U), and lower outliers (L)
         ax.plot(positions, medians, marker='o', color='red', label='Median', linewidth=1, markersize=5)
         ax.plot(positions, q1s, marker='.', color='green', label='Q1', linestyle='dashed', linewidth=0.75, markersize=3)
         ax.plot(positions, q3s, marker='.', color='blue', label='Q3', linestyle='dashed', linewidth=0.75, markersize=3)
 
-        # Plot upper outliers (U) as a line graph
         upper_outliers_valid = [o for o in upper_outliers if o is not None]
         if len(upper_outliers_valid) > 0:
             ax.plot(positions, [q3 if o is None else o for q3, o in zip(q3s, upper_outliers)], color='orange',
                     linestyle='dashed', linewidth=0.5)
             ax.scatter(positions, upper_outliers, marker='^', color='orange', label='Upper Outlier', s=15)
 
-        # Plot lower outliers (L) as a line graph
         lower_outliers_valid = [o for o in lower_outliers if o is not None]
         if len(lower_outliers_valid) > 0:
             ax.plot(positions, [q1 if o is None else o for q1, o in zip(q1s, lower_outliers)], color='purple',
@@ -210,7 +200,7 @@ class Dataset:
         ax.legend()
 
         plt.tight_layout()
-        plt.savefig(plotName, dpi=300)  # Increase dpi for higher resolution if needed
+        plt.savefig(plotName, dpi=300)
         plt.close()
 
 
@@ -258,50 +248,22 @@ class Dataset:
         plt.tight_layout()
         plt.show()
 
-    ''' def getDailyAverage(self):
-        df = self.df[self.df['Sense Device Name'] == 'Consumption'].copy()
-        df['DateTime (UTC)'] = pd.to_datetime(df['DateTime (UTC)'], dayfirst=True)
-        df['Date'] = df['DateTime (UTC)'].dt.date
-        daily_average = df.groupby('Date')['Consumption (kWh)'].sum()
-        average_consumption = daily_average.mean()
-        average_consumption = round(average_consumption, 2)
-
-        # Convert the daily average to annual consumption
-        annual_consumption = average_consumption * 365
-
-        # Determine the household size based on the annual consumption
-        if annual_consumption <= (1800 + 2900) / 2:
-            household_size = "1-2 people"
-        elif (1800 + 2900) / 2 < annual_consumption <= (2900 + 4300) / 2:
-            household_size = "2-3 people"
-        else:
-            household_size = "4+ people"
-
-        return {"avg": average_consumption, "householdSize": household_size} '''
-
     def getDailyAverageInterval(self, last_day, first_day=0):
         df = self.df[self.df['Sense Device Name'] == 'Consumption'].copy()
         df['DateTime (UTC)'] = pd.to_datetime(df['DateTime (UTC)'], dayfirst=True)
-        df.set_index('DateTime (UTC)', inplace=True)  # Set DateTime as index for resampling
+        df.set_index('DateTime (UTC)', inplace=True)
 
-        # Resample to daily frequency and sum up the minute data
         df = df.resample('D').sum().reset_index()
 
-        # Calculate the date range
         max_date = df['DateTime (UTC)'].max().date()
         start_date = max_date - pd.Timedelta(days=first_day)
         end_date = max_date - pd.Timedelta(days=last_day)
-
-        # Select the rows within the date range
         df = df[(df['DateTime (UTC)'].dt.date >= end_date) & (df['DateTime (UTC)'].dt.date < start_date)]
 
         daily_average = df['Consumption (kWh)'].mean()
         average_consumption = round(daily_average, 2)
 
-        # Convert the daily average to annual consumption
         annual_consumption = average_consumption * 365
-
-        # Determine the household size based on the annual consumption
         if annual_consumption <= (1800 + 2900) / 2:
             household_size = "1-2 people"
         elif (1800 + 2900) / 2 < annual_consumption <= (2900 + 4300) / 2:
@@ -311,81 +273,39 @@ class Dataset:
 
         return {"avg": average_consumption, "householdSize": household_size}
 
-    '''def getScore(self):
-        avg = self.getDailyAverage()["avg"]
-
-        directory = "output/"
-        total_avg = 0
-        file_count = 0
-
-        for filename in os.listdir(directory):
-            if filename.startswith("User") and filename.endswith(".csv"):
-                file_path = os.path.join(directory, filename)
-                data = Dataset(file_path)
-                total_avg += data.getDailyAverage()["avg"]
-                file_count += 1
-
-        # Average across all users
-        if file_count != 0:
-            total_avg /= file_count
-        else:
-            total_avg = 0
-
-        # Prevent division by zero
-        if avg != 0:
-            score = (total_avg / avg) * 40
-        else:
-            score = 0
-
-        score = max(0, min(score, 100))
-
-        return int(score)'''
-
     def get_consumption_last_7_days(self):
         df = self.df[self.df['Sense Device Name'] == 'Consumption'].copy()
-        df['DateTime (UTC)'] = pd.to_datetime(df['DateTime (UTC)'], dayfirst=True) # Make sure dayfirst is True as date is in DD/MM/YYYY format
-        df.set_index('DateTime (UTC)', inplace=True)  # Set 'DateTime (UTC)' as the index
-
-        # Resample to daily frequency and sum up the minute data
+        df['DateTime (UTC)'] = pd.to_datetime(df['DateTime (UTC)'], dayfirst=True)
+        df.set_index('DateTime (UTC)', inplace=True)
         daily_data = df.resample('D').sum()
 
-        # Get last 7 days of data
         last_7_days = daily_data.last('7D')
-
-        # Return the data as a list of dictionaries
         return {date.strftime('%Y-%m-%d'): consumption for date, consumption in last_7_days['Consumption (kWh)'].items()}
     
 
     def get_consumption_last_7_days2(self):
         # Parse date
         self.df['DateTime (UTC)'] = pd.to_datetime(self.df['DateTime (UTC)'], dayfirst=True)
-        self.df.set_index('DateTime (UTC)', inplace=True)  # Set 'DateTime (UTC)' as the index
+        self.df.set_index('DateTime (UTC)', inplace=True)
 
-        # Group by day and device type and sum consumption
         daily_data = self.df.groupby([pd.Grouper(freq='D'), 'Device Type']).sum().reset_index()
-
-        # Get the most recent date in your data
         most_recent_date = daily_data['DateTime (UTC)'].max()
 
-        # Get last 7 days of data
         last_7_days = daily_data[daily_data['DateTime (UTC)'] >= most_recent_date - pd.DateOffset(days=6)]
 
-        # Prepare the data in the format required for the D3.js stacked bar chart
         result = {}
         for _, row in last_7_days.iterrows():
             date = row['DateTime (UTC)'].strftime('%Y-%m-%d')
             device_type = row['Device Type']
-            consumption = Decimal(row['Consumption (kWh)']).quantize(Decimal('0.000'))  # Round consumption to 3 decimal places
+            consumption = Decimal(row['Consumption (kWh)']).quantize(Decimal('0.000'))
 
             if date not in result:
                 result[date] = {}
 
             result[date][device_type] = consumption
 
-        # Create a complete set of dates for the past 7 days
         complete_date_range = pd.date_range(end=most_recent_date, periods=7).format(formatter=lambda x: x.strftime('%Y-%m-%d'))
 
-        # Fill in any missing dates in the result
         for date in complete_date_range:
             if date not in result:
                 result[date] = {}
@@ -410,8 +330,6 @@ class Dataset:
             ]
             
         hourly_data = filtered_data.groupby('Hour')['Consumption (kWh)'].sum().reset_index()
-
-        # Ensure that the 'Hour' column is complete, by reindexing to the full hour range (0 to 23)
         hourly_data.set_index('Hour', inplace=True)
         hourly_data = hourly_data.reindex(range(0, 24), fill_value=0).reset_index()
 
@@ -432,20 +350,12 @@ class Dataset:
             return f"Your consumption was {percentage_change:.2f}% lower than last week."
         
     def get_average_consumption_last_x_days(self, x=6):
-        # Parse date
         self.df['DateTime (UTC)'] = pd.to_datetime(self.df['DateTime (UTC)'], dayfirst=True)
-        self.df.set_index('DateTime (UTC)', inplace=True)  # Set 'DateTime (UTC)' as the index
-
-        # Create new column that takes 'Device Type' if it exists and is not null, else 'Sense Device Name'
+        self.df.set_index('DateTime (UTC)', inplace=True)
         self.df['Device'] = self.df['Device Type'].where(self.df['Device Type'].notna(), self.df['Sense Device Name'])
-
         daily_data = self.df.groupby([pd.Grouper(freq='D'), 'Device']).sum().reset_index()
-
         second_most_recent_date = daily_data['DateTime (UTC)'].unique()[-2]
-
         last_x_days = daily_data[(daily_data['DateTime (UTC)'] >= second_most_recent_date - pd.DateOffset(days=x)) & (daily_data['DateTime (UTC)'] <= second_most_recent_date)]
-
-        # Group by device type and calculate average consumption over last x days
         avg_consumption = last_x_days.groupby('Device')['Consumption (kWh)'].mean()
         result = avg_consumption.round(3).to_dict()
 

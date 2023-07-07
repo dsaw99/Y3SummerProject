@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from flask_cors import CORS, cross_origin
-import os
 import openai
 import dataProcessing as dataProcessing
 import fridgeReport
-import random
 import pandas as pd
 
 app = Flask(__name__)
@@ -28,7 +26,7 @@ nudges = [
     "Insulating your hot water pipes could help you save up to £40 a year!"
 ]
 
-openai.api_key = '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'
+openai.api_key = 'insertHere' # insert secret key
 
 @app.route('/')
 def home():
@@ -91,8 +89,6 @@ def getChallenges():
     data_prompt = 'This community has the following daily consumption averages (in kWh): Total: ' + str(averages['Consumption']) + ', Fridge: ' +  str(averages['Fridge']) + ', Oven and other Heating Devices: ' \
        +  str(averages['Mystery Heat']) + ', Washing Machine and/or Dishwasher: ' +  str(averages['Mystery Motor']) + ', Tea Kettle: ' +  str(averages['Tea Kettle']) + \
       ', Freezer: ' +  str(averages['Freezer']) + ', Always On: ' +  str(averages['Always On']) + ', Microwave: ' +  str(averages['Microwave']) + ', Stove Top: ' + str(averages['Stove Top']) + ', Vaccum: ' + str(averages['Vacuum']) +'.'
-
-    #data_prompt = 'This community has the following monthly consumption averages (in kWh): Always-On: 149.7, Washing Machine: 13.36, Dishwasher: 20.88, Laundry Dryer: 90.75 and Fridge: 19.89.'
 
     prompt = system_prompt + data_prompt + " \n What is 1 Effective and Feasible Challenge do you suggest for this community? The format of your answer should be: <Creative Title for Challenge>: <newline> \
         <Description of the Challenge>. <newline> <Predicted monthly energy savings as a percent reduction> in the category \"<Corresponding Category>\" . \
@@ -165,13 +161,11 @@ def PreviousNudge():
 def report():
     ReportClass = fridgeReport.Fridge()
 
-    # Get data from form
     fridge_type = request.form.get('fridgeType')
     energy_rating = request.form.get('energyRating')
     household_size = int(request.form.get('householdSize'))
     years_used = int(request.form.get('yearsUsed'))
 
-    # Construct the user dataframe
     users = pd.DataFrame({
         'User_ID': 1,
         'Fridge Type': [fridge_type],
@@ -180,11 +174,9 @@ def report():
         'Fridge Years Used': [years_used]
     })
 
-    # Create empty dataframe for fridge_report and suggestion_list
     fridge_report = pd.DataFrame()
     fridge_suggestion_list = pd.DataFrame()
 
-    # Call your function with this data
     fridge_list, group_size, total_saving = ReportClass.fridge_report(users, 1, fridge_report, fridge_suggestion_list)
 
     if fridge_list.empty:

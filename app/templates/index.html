@@ -74,7 +74,7 @@
         margin-right: 20px;
         justify-content: center;
         align-items: center;
-        height: 100%;  /* or you can adjust the height as needed */
+        height: 100%;
     }
 
     .AlwaysOn-column {
@@ -142,15 +142,14 @@
         position: absolute;
         top: 10px;
         left: 10px;
-        padding: 5px 10px; /* Adjust the padding as needed */
-        font-size: 14px; /* Adjust the font size as needed */
+        padding: 5px 10px;
+        font-size: 14px;
         width: 10%;
     }
 
     #tipsContent {
-        height: auto;       /* This makes the height adaptable to the content */
-        overflow-y: auto;   /* This adds a scrollbar if the content overflows the div */
-        /* Add other properties as needed */
+        height: auto;
+        overflow-y: auto;
     }
 
     #answer {
@@ -166,11 +165,10 @@
     }
 
     #consumptionChart,  #consumptionChart2, #expandedChart{
-        height: 400px; /* adjust as needed */
-        width: 600px; /* adjust as needed */
+        height: 400px;
+        width: 600px;
     }
 
-    /* CHAT */
     .chat-icon {
         position: fixed;
         bottom: 20px;
@@ -518,9 +516,9 @@
                         .attr("class", "bar")
                         .attr("x", function (d) { return xScale(d.Hour); })
                         .attr("width", xScale.bandwidth())
-                        .attr("fill", barColor)  // Set the same color for all the bars
-                        .attr("y", function (d) { return yScale(0); })       // Initial y value set to bottom
-                        .attr("height", function (d) { return height - yScale(0); }) // Initial height set to 0
+                        .attr("fill", barColor)
+                        .attr("y", function (d) { return yScale(0); })
+                        .attr("height", function (d) { return height - yScale(0); })
                         .on('mouseover', function (event, d) {
                             d3.select(this).style('opacity', 0.7);
                             tooltip
@@ -547,7 +545,6 @@
 
 
         function drawConsumptionChart(data, user) {
-            // Convert data into an array of objects
             var dataArray = [];
             for (var date in data) {
                 dataArray.push({
@@ -556,7 +553,6 @@
                 });
             }
 
-            // Clear the SVG
             d3.select("#consumptionChart").html("");
 
             var margin = { top: 20, right: 20, bottom: 50, left: 60 },
@@ -575,7 +571,7 @@
                 .append("rect")
                 .attr("width", width)
                 .attr("height", height)
-                .attr("fill", "white"); // Add white background to the chart
+                .attr("fill", "white");
 
             var xScale = d3.scaleBand().range([0, width]).padding(0.4),
                 yScale = d3.scaleLinear().rangeRound([height, 0]);
@@ -583,7 +579,7 @@
             xScale.domain(dataArray.map(function (d) { return d.date; }));
             yScale.domain([0, d3.max(dataArray, function (d) { return d.consumption; })]).nice();
 
-            var barColor = "#90EE90"; // Set the lighter blue-green color for all the bars
+            var barColor = "#90EE90";
 
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
@@ -606,7 +602,6 @@
                     .attr("text-anchor", "start")
                     .text("Consumption (kWh)")
 
-            // Define tooltip
             var tooltip = d3.select(".toolTip");
 
             if(tooltip.empty()){
@@ -620,9 +615,9 @@
                 .attr("class", "bar")
                 .attr("x", function (d) { return xScale(d.date); })
                 .attr("width", xScale.bandwidth())
-                .attr("fill", barColor)  // Set the same color for all the bars
-                .attr("y", function (d) { return yScale(0); })       // Initial y value set to bottom
-                .attr("height", function (d) { return height - yScale(0); }) // Initial height set to 0
+                .attr("fill", barColor)
+                .attr("y", function (d) { return yScale(0); })
+                .attr("height", function (d) { return height - yScale(0); })
                 .on('mouseover', function (event, d) {
                     d3.select(this).style('opacity', 0.7);
                     tooltip
@@ -645,14 +640,12 @@
                 .attr("y", function (d) { return yScale(d.consumption); })
                 .attr("height", function (d) { return height - yScale(d.consumption); });
 
-            // Round the corners of the rectangles
             svg.selectAll("rect")
                 .attr("rx", 6)
                 .attr("ry", 6);
         }
 
         function drawConsumptionChart2(data, user) {
-            // Convert data into an array of objects
             var dataArray = [];
             for (var date in data) {
                 dataArray.push({
@@ -667,7 +660,6 @@
 
             d3.select("#consumptionChart2").html("");
 
-            // Define SVG, margin, width, and height
             var margin = { top: 20, right: 20, bottom: 50, left: 60 },
                 width = 600 - margin.left - margin.right,
                 height = 400 - margin.top - margin.bottom;
@@ -678,7 +670,6 @@
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            // Define scale
             var x = d3.scaleBand()
                 .range([0, width])
                 .padding(0.4);
@@ -688,22 +679,18 @@
 
             var z = d3.scaleOrdinal(d3.schemeCategory10); 
 
-            // Define keys as the set of device types
             var keys = Array.from(new Set(dataArray.flatMap(d => Object.keys(d).filter(key => key !== 'date'))));
 
-            // Scale domains
             x.domain(dataArray.map(function(d) { return d.date; }));
             y.domain([0, d3.max(dataArray, function(d) { return d3.sum(keys, function(key) { return d[key]; }); })]).nice();
             z.domain(keys);
 
-            // Define tooltip
             var tooltip = d3.select(".toolTip");
 
             if(tooltip.empty()){
                 tooltip = d3.select("body").append("div").attr("class", "toolTip");
             }
 
-            // Append groups and rectangles
             var bar = svg.append("g")
                 .selectAll("g")
                 .data(d3.stack().keys(keys)(dataArray))
@@ -714,11 +701,11 @@
                 .data(function(d) { return d; })
                 .enter().append("rect")
                     .attr("x", function(d) { return x(d.data.date); })
-                    .attr("y", function(d) { return y(0); }) // Set initial height to 0
-                    .attr("height", 0) // Set initial height to 0
+                    .attr("y", function(d) { return y(0); })
+                    .attr("height", 0)
                     .attr("width", x.bandwidth())
-                    .attr("rx", 2) // round corners
-                    .attr("ry", 2) // round corners
+                    .attr("rx", 2)
+                    .attr("ry", 2)
                     .on("mouseover", function() { d3.select(this).style('opacity', 0.7); }) 
                     .on("mousemove", function(event, d){
                         tooltip
@@ -893,10 +880,8 @@
                 });
             }
 
-            // Call the function when the page loads
             fetchData();
 
-            // Call the function when the button is clicked
             $("#setUserButton").click(fetchData);
         });
 
