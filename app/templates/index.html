@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nudge Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+    body, html {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .toolTip {
+        position: absolute;
+        display: none;
+        min-width: 20px;
+        height: auto;
+        background: none repeat scroll 0 0 #ffffff;
+        border: 1px solid #6F257F;
+        padding: 10px;
+        text-align: center;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        padding: 20px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .top-section, .chart-section {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin: auto
+    }
+
+    .bottom-section {
+        width: 100%;
+    }
+
+    .alwaysOnSection {
+        display: none;
+        width: 100%;
+    }
+
+    .expanded-chart-container, .chart-container, .interaction-column, .score-column, .tips-column, .AlwaysOn-column {
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        border-radius: 5px;
+        background: #fff;
+        margin-bottom: 20px;
+    }
+
+    .insight {
+        padding: 0px;
+        width: 95%;
+        height: 45px
+    }
+
+    .interaction-column, .score-column {
+        width: 400px;
+        margin-right: 20px;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .AlwaysOn-column {
+        margin: auto;
+        margin-bottom: 20px;
+        width: 50%;
+    }
+
+    .tips-column {
+        margin: auto;
+        margin-bottom: 20px;
+        width: 70%;
+    }
+
+    #tipsTitle, #AlwaysOnTitle {
+        font-size: 20px;
+        margin-bottom: 5px;
+        margin-top: 0;
+    }
+
+    .chart-container {
+        margin: auto;
+        width: 600px;
+        margin-right: 20px;
+        margin-bottom: 20px;
+    }
+
+    .expanded-chart-container{
+        margin: auto;
+        width: 1000px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    select, button, input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .Button, #chatButton {
+        background-color: #09a530;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    #PreviousNudge:hover, #NextNudge:hover, #ChallengesButton:hover, #setUserButton:hover, #chatButton:hover {
+        background-color: #3fa659
+    }
+
+    #PreviousNudge, #NextNudge{
+        width: 10%;
+        margin-top: 20px;
+        margin-bottom: 0px
+    }
+
+    nav {
+    position: relative;
+    }
+    #logoutButton {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        font-size: 14px;
+        width: 10%;
+    }
+
+    #tipsContent {
+        height: auto;
+        overflow-y: auto;
+    }
+
+    #answer {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .textInsight{
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    #consumptionChart,  #consumptionChart2, #expandedChart{
+        height: 400px;
+        width: 600px;
+    }
+
+    .chat-icon {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        background-color: #09a530;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        font-size: 30px;
+        cursor: pointer;
+        z-index: 9999;
+    }
+
+    .chat-box {
+        position: fixed;
+        bottom: 20px; 
+        left: 75px; 
+        width: 350px;
+        padding: 20px;
+        background-color: #ffffff;
+        box-shadow: 0px 0px 20px rgba(0,0,0,0.1);
+        border-radius: 10px 10px 0 0;
+        display: none;
+        align-items: center; 
+        justify-content: center; 
+        flex-direction: column; 
+    }
+
+    #chatButton {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .chat-input {
+        width: 95%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .chat-output {
+        height: 150px;
+        width: 95%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        overflow-y: scroll;
+    }
+    
+    .button-container {
+        display: flex;
+        justify-content: space-between; 
+    }
+
+    .loader {
+        border: 16px solid #f3f3f3; 
+        border-top: 16px solid #3498db;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 2s linear infinite;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .form-control2 {
+        width: 98.5%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .submit-button {
+        background-color: #09a530;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    fieldset {
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    legend {
+        padding: 0 10px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <nav>
+        {% if session['username'] and session['password'] %}
+            <button id="logoutButton">Logout</button>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        <h1>Dashboard</h1>
+        <div class="top-section">
+            <div class="interaction-column">
+                <select id="userInput">
+                    <option value="1">User 1</option>
+                    <option value="2">User 2</option>
+                    <option value="3">User 3</option>
+                    <option value="4">User 4</option>
+                    <option value="5">User 5</option>
+                </select>
+                <button class= "Button" id="setUserButton">Set User</button>
+            </div>
+            
+            <div class="score-column">
+                <div class="insight" id="insight1">
+                    <p class="textInsight" id="answer"></p>
+                </div>
+                <div class="insight" id="insight1">
+                    <p class="textInsight" id="textInsight1"></p>
+                </div>
+                <div class="insight" id="insight2">
+                    <p class="textInsight" id="textInsight2"></p>
+                </div>
+            </div>
+        </div>
+        <div class="chart-section" >
+            <div class="chart-container">
+                <div id="consumptionChart"></div>
+            </div>
+            <div class="chart-container">
+                <div id="consumptionChart2"></div>
+            </div>
+        </div>
+        <div class= "expanded-chart-container" >
+            <div id="expandedChart"></div>
+        </div>
+        <div class="alwaysOnSection">
+            <div class="AlwaysOn-column">
+                <h2 id="AlwaysOnTitle">Always On:</h2>
+                <p id="NudgesContent"></p>
+                <div class="button-container"> 
+                    <button class= "Button" id="PreviousNudge">Previous</button>
+                    <button class= "Button" id="NextNudge">Next</button>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-section">
+            <div class="tips-column">
+                <h2>Community Challenges:</h2>
+                <p id="tipsContent"></p>
+                <button class= "Button" id="ChallengesButton">Get Challenge</button>
+            </div>
+        </div>
+    </div>
+        
+    <div class="bottom-section">
+        <div class="tips-column">
+            <h2 id="FridgeTitle">Fridge Report:</h2>
+            <form method="POST" action="/generate_report">
+                <fieldset>
+                    <legend>Household Information</legend>
+                    <div class="form-group">
+                        <label for="householdSize">Household Size:</label>
+                        <input type="number" id="householdSize" name="householdSize" min="0" step="1" max="5" class="form-control2" value="1">
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Fridge Specifications</legend>
+                    <div class="form-group">
+                        <label for="fridgeType">Fridge Type:</label>
+                        <select id="fridgeType" name="fridgeType" class="form-control">
+                            <option value="freestanding">Freestanding</option>
+                            <option value="american">American</option>
+                            <option value="under counter">Under Counter</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="energyRating">Energy Rating:</label>
+                        <select id="energyRating" name="energyRating" class="form-control">
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="yearsUsed">Years Used:</label>
+                        <input type="number" id="yearsUsed" name="yearsUsed" min="0" step="1" max="20" class="form-control2" value="4">
+                    </div>
+                </fieldset>
+                <input type="submit" value="Submit" class="submit-button">
+            </form>
+        </div> 
+    </div>
+
+    <div class="bottom-section">
+        <div class="tips-column">
+            <h2>Check the Simulation:</h2>
+            <form method="POST" action="/getSimulation">
+                <input type="submit" class="submit-button" id="simulation" value="Go to Simulation">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function drawScoreChart(score) {
+            var width = 50,
+                height = 50,
+                radius = Math.min(width, height) / 2;
+
+            var svg = d3.select("#scoreChart");
+            svg.selectAll("*").remove();
+
+            var scale = d3.scaleLinear()
+                .range([0, -2 * Math.PI])
+                .domain([0, 100]);
+
+            var arc = d3.arc()
+                .innerRadius(radius / 1.3)
+                .outerRadius(radius)
+                .startAngle(0);
+
+            var color = d3.scaleLinear()
+                .range(['red', 'yellow', 'green'])
+                .domain([0, 50, 100]);
+
+            var path = svg.append("path")
+                .datum({endAngle: 0})
+                .attr("d", arc)
+                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+            path.transition()
+                .duration(2000)
+                .styleTween("fill", function() { return d3.interpolate(color(0), color(score)); })
+                .call(arcTween, scale(score));
+
+            setTimeout(function() {
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height / 2 + 5)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "16px")
+                    .style("font-family", "Impact")
+                    .style("fill", color(score))
+                    .text(score);
+            }, 2000);
+
+            function arcTween(transition, newAngle) {
+                transition.attrTween("d", function(d) {
+                    var interpolate = d3.interpolate(d.endAngle, newAngle);
+                    return function(t) {
+                        d.endAngle = interpolate(t);
+                        return arc(d);
+                    };
+                });
+            }
+        }
+
+        function drawExpandedChart(user, date, type, color) {
+            document.querySelector(".expanded-chart-container").style.display = "block";
+            d3.json('/get_hourly_data?user=' + encodeURIComponent(user) + '&date=' + encodeURIComponent(date) + '&type=' + encodeURIComponent(type))
+                .then(function (data) {
+                    d3.select("#expandedChart").html("");
+
+                    var margin = { top: 20, right: 20, bottom: 30, left: 175 },
+                        width = 800 - margin.left - margin.right,
+                        height = 400 - margin.top - margin.bottom;
+
+                    var svg = d3
+                        .select("#expandedChart")
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                    var xScale = d3.scaleBand().range([0, width]).padding(0.4),
+                        yScale = d3.scaleLinear().range([height, 0]);
+
+                    xScale.domain(data.map(function (d) { return d.Hour; }));
+                    yScale.domain([0, d3.max(data, function (d) { return d['Consumption (kWh)']; })]).nice();
+
+                    var barColor = color;
+
+                    svg.append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(xScale))
+                        .append("text")
+                        .attr("y", 35)
+                        .attr("x", width / 2)
+                        .attr("text-anchor", "end")
+                        .attr("stroke", "black");
+
+                    svg.append("g")
+                        .call(d3.axisLeft(yScale).tickSize(-width).ticks(10).tickFormat(function (d) {
+                            if (this.parentNode.nextSibling) {
+                                return d;
+                            } else {
+                                return "Hourly Consumption (kWh)" + d;
+                            }
+                        }));
+
+                    // Define tooltip
+                    var tooltip = d3.select(".toolTip");
+
+                    if(tooltip.empty()){
+                        tooltip = d3.select("body").append("div").attr("class", "toolTip");
+                    }
+
+                    svg.selectAll(".bar")
+                        .data(data)
+                        .enter().append("rect")
+                        .attr("class", "bar")
+                        .attr("x", function (d) { return xScale(d.Hour); })
+                        .attr("width", xScale.bandwidth())
+                        .attr("fill", barColor)
+                        .attr("y", function (d) { return yScale(0); })
+                        .attr("height", function (d) { return height - yScale(0); })
+                        .on('mouseover', function (event, d) {
+                            d3.select(this).style('opacity', 0.7);
+                            tooltip
+                                .style("left", event.pageX - 50 + "px")
+                                .style("top", event.pageY - 70 + "px")
+                                .style("display", "inline-block")
+                                .html(d.Hour + "h00" + "<br>" + "kWh:" + d['Consumption (kWh)'].toFixed(3));
+                        })
+                        .on('mouseout', function () {
+                            d3.select(this).style('opacity', 1);
+                            tooltip.style("display", "none");
+                        })
+                        .transition()
+                        .duration(200)
+                        .delay(function (d, i) { return i * 100; })
+                        .attr("y", function (d) { return yScale(d['Consumption (kWh)']); })
+                        .attr("height", function (d) { return height - yScale(d['Consumption (kWh)']); });
+                });
+                
+                svg.selectAll("rect")
+                .attr("rx", 4)
+                .attr("ry", 4);
+            }
+
+
+        function drawConsumptionChart(data, user) {
+            var dataArray = [];
+            for (var date in data) {
+                dataArray.push({
+                    date: date,
+                    consumption: data[date]
+                });
+            }
+
+            d3.select("#consumptionChart").html("");
+
+            var margin = { top: 20, right: 20, bottom: 50, left: 60 },
+                width = 600 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
+
+            var svg = d3
+                .select("#consumptionChart")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            svg
+                .append("rect")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("fill", "white");
+
+            var xScale = d3.scaleBand().range([0, width]).padding(0.4),
+                yScale = d3.scaleLinear().rangeRound([height, 0]);
+
+            xScale.domain(dataArray.map(function (d) { return d.date; }));
+            yScale.domain([0, d3.max(dataArray, function (d) { return d.consumption; })]).nice();
+
+            var barColor = "#90EE90";
+
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xScale))
+                .append("text")
+                .attr("y", 35)
+                .attr("x", width / 2)
+                .attr("text-anchor", "end")
+                .attr("stroke", "black")
+
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale).ticks(null, "s"))
+                .append("text")
+                    .attr("y", yScale(yScale.ticks().pop()) + 0.5)
+                    .attr("x", 2)
+                    .attr("dy", "0.32em")
+                    .attr("fill", "#000")
+                    .attr("font-weight", "bold")
+                    .attr("text-anchor", "start")
+                    .text("Consumption (kWh)")
+
+            var tooltip = d3.select(".toolTip");
+
+            if(tooltip.empty()){
+                tooltip = d3.select("body").append("div").attr("class", "toolTip");
+            }
+
+
+            svg.selectAll(".bar")
+                .data(dataArray)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function (d) { return xScale(d.date); })
+                .attr("width", xScale.bandwidth())
+                .attr("fill", barColor)
+                .attr("y", function (d) { return yScale(0); })
+                .attr("height", function (d) { return height - yScale(0); })
+                .on('mouseover', function (event, d) {
+                    d3.select(this).style('opacity', 0.7);
+                    tooltip
+                        .style("left", event.pageX - 50 + "px")
+                        .style("top", event.pageY - 70 + "px")
+                        .style("display", "inline-block")
+                        .html(d.date + "<br>" + "kWh: " + d.consumption.toFixed(3));
+                })
+                .on('mouseout', function () {
+                    d3.select(this).style('opacity', 1);
+                    tooltip.style("display", "none");
+                })
+                .on("click", function (event, d) {
+                    var color = d3.select(this).attr('fill');
+                    drawExpandedChart(user, d.date, "Consumption", color);
+                })
+                .transition()
+                .duration(800)
+                .delay(function (d, i) { return i * 60; })
+                .attr("y", function (d) { return yScale(d.consumption); })
+                .attr("height", function (d) { return height - yScale(d.consumption); });
+
+            svg.selectAll("rect")
+                .attr("rx", 6)
+                .attr("ry", 6);
+        }
+
+        function drawConsumptionChart2(data, user) {
+            var dataArray = [];
+            for (var date in data) {
+                dataArray.push({
+                    date: date,
+                    ...data[date]
+                });
+            }
+
+            var parentDiv = document.getElementById("consumptionChart2");
+            var parentWidth = parentDiv.clientWidth;
+            var parentHeight = parentDiv.clientHeight;
+
+            d3.select("#consumptionChart2").html("");
+
+            var margin = { top: 20, right: 20, bottom: 50, left: 60 },
+                width = 600 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
+
+            var svg = d3.select("#consumptionChart2").append("svg") 
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var x = d3.scaleBand()
+                .range([0, width])
+                .padding(0.4);
+
+            var y = d3.scaleLinear()
+                .rangeRound([height, 0]);
+
+            var z = d3.scaleOrdinal(d3.schemeCategory10); 
+
+            var keys = Array.from(new Set(dataArray.flatMap(d => Object.keys(d).filter(key => key !== 'date'))));
+
+            x.domain(dataArray.map(function(d) { return d.date; }));
+            y.domain([0, d3.max(dataArray, function(d) { return d3.sum(keys, function(key) { return d[key]; }); })]).nice();
+            z.domain(keys);
+
+            var tooltip = d3.select(".toolTip");
+
+            if(tooltip.empty()){
+                tooltip = d3.select("body").append("div").attr("class", "toolTip");
+            }
+
+            var bar = svg.append("g")
+                .selectAll("g")
+                .data(d3.stack().keys(keys)(dataArray))
+                .enter().append("g")
+                .attr("fill", function(d) { return z(d.key); });
+
+            bar.selectAll("rect")
+                .data(function(d) { return d; })
+                .enter().append("rect")
+                    .attr("x", function(d) { return x(d.data.date); })
+                    .attr("y", function(d) { return y(0); })
+                    .attr("height", 0)
+                    .attr("width", x.bandwidth())
+                    .attr("rx", 2)
+                    .attr("ry", 2)
+                    .on("mouseover", function() { d3.select(this).style('opacity', 0.7); }) 
+                    .on("mousemove", function(event, d){
+                        tooltip
+                            .style("left", event.pageX - 50 + "px")
+                            .style("top", event.pageY - 70 + "px")
+                            .style("display", "inline-block")
+                            .html((d.data.date) + "<br>" + "kWh: " + (d[1]-d[0]).toFixed(3));
+                    })
+                    .on("mouseout", function(d){ tooltip.style("display", "none"); d3.select(this).style('opacity', 1);})
+                    .on("click", function(event, d) {
+                        var color = d3.select(this.parentNode).attr('fill');
+                        drawExpandedChart(user, d.data.date, event.target.parentNode.__data__.key, color); 
+                    })
+                    .transition() 
+                    .duration(1000) 
+                    .attr("y", function(d) { return y(d[1]); }) 
+                    .attr("height", function(d) { return y(d[0]) - y(d[1]); }); 
+
+            // Append x-axis
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .append("text")
+                    .attr("y", -30)
+                    .attr("x", -50)
+                    .attr("text-anchor", "end")
+                    .attr("stroke", "black")
+            // Append y-axis
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(y).ticks(10, ".2f"))
+                .append("text")
+                    .attr("x", 2)
+                    .attr("y", y(y.ticks().pop()) + 0.5)
+                    .attr("dy", "0.32em")
+                    .attr("fill", "#000")
+                    .attr("font-weight", "bold")
+                    .attr("text-anchor", "start")
+                    .text("Consumption (kWh)");
+
+            // Append legend
+            var legend = svg.append("g")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10)
+                .attr("text-anchor", "end")
+                .selectAll("g")
+                .data(keys.slice().reverse())
+                .enter().append("g")
+                .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+            legend.append("rect")
+                .attr("x", width - 19)
+                .attr("width", 19)
+                .attr("height", 19)
+                .attr("fill", z);
+
+            legend.append("text")
+                .attr("x", width - 24)
+                .attr("y", 9.5)
+                .attr("dy", "0.32em")
+                .text(function(d) { return d; });
+        }
+
+        $("#logoutButton").click(function() {
+            window.location.href = '/logout';
+        });
+        
+        $('#ChallengesButton').click(function() {
+            $.ajax({
+                url: '/api/getChallenges',
+                type: 'POST',
+                contentType: 'application/json',
+                success: function(response) {
+                    let formattedResponse = response.replace(/\n/g, '<br>');
+                    var paragraph = $('<p>');
+                    paragraph.html(formattedResponse);
+                    $("#tipsContent").append(paragraph);
+                }
+            });
+        })
+
+        $('#NextNudge').click(function() {
+            $.ajax({
+                url: '/NextNudge',
+                type: 'POST',
+                contentType: 'application/json',
+                success: function(response) {
+                    $("#NudgesContent").html(response.nudge);
+                }
+            });
+        });
+
+        $('#PreviousNudge').click(function() {
+            $.ajax({
+                url: '/PreviousNudge',
+                type: 'POST',
+                contentType: 'application/json',
+                success: function(response) {
+                    $("#NudgesContent").html(response.nudge);
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            function fetchData() {
+                var user = $("#userInput").val();
+                $.ajax({
+                    url: '/api/getScore',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user: user }),
+                    success: function(response) {
+                        $("#textInsight1").text(response).css("font-size", "14px");
+                    }
+                });
+
+                $.ajax({
+                    url: '/api/setUser',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user: user }),
+                    success: function(response) {
+                        $("#answer").text("Your daily average consumption was " + response.avg + " kWh.").css("font-size", "14px");
+                        $("#textInsight2").text("Your consumption equaled a " + response.householdSize + " household.").css("font-size", "14px");
+                    }
+                });
+                
+                $.ajax({
+                    url: '/api/getConsumption',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user: user }),
+                    success: function(data) {
+                        drawConsumptionChart(data, user);
+                    }
+                });
+
+                $.ajax({
+                    url: '/api/getConsumption2',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user: user }),
+                    success: function(data) {
+                        drawConsumptionChart2(data, user);
+                    }
+                });
+
+                $.ajax({
+                    url: '/AlwaysOnRatio',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user: user }),
+                    success: function(relevancy) {
+                        if(relevancy > 20){
+                            document.querySelector(".alwaysOnSection").style.display = "block";
+                            $("#AlwaysOnTitle").html("Your Always-On devices are responsible for " + relevancy + "% of your total consumption.")
+                            $.ajax({
+                                url: '/NextNudge',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                success: function(response) {
+                                    $("#NudgesContent").html(response.nudge);
+                                }
+                            });
+                            
+                        }
+                        else{
+                            document.querySelector(".alwaysOnSection").style.display = "none";
+                        }
+                    }
+                });
+            }
+
+            fetchData();
+
+            $("#setUserButton").click(fetchData);
+        });
+
+    </script>
+</body>
+</html>
