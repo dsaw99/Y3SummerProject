@@ -1,7 +1,1 @@
-tar/
-png/
-output/
-csv/
 __pycache__/
-*.png
-*.csv
